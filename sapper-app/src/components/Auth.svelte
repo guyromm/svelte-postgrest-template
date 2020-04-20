@@ -1,11 +1,22 @@
 <script>
+ import { onMount } from 'svelte';
  import {Switcher,Box,Stack} from '../components/layout';
  import {login,getAuthData,getCookie} from '../../../common/postgrest.js';
  import {parseToken,authDataStore} from '../lib/stores.js';
- import { GoogleAuth, FacebookAuth } from '@beyonk/svelte-social-auth'
  const l = console.log;
  const FBAPPID=process.env.FACEBOOK_APP_ID;
  const GOOGLECLIENTID=process.env.GOOGLE_CLIENT_ID;
+ //dynamically imported as per https://sapper.svelte.dev/docs#Making_a_component_SSR_compatible :
+ let GoogleAuth
+ let FacebookAuth;
+
+ onMount(async () => {
+     const module = await import('@beyonk/svelte-social-auth');
+     l('imported social auth',module);
+     FacebookAuth = module.FacebookAuth;     
+     GoogleAuth = module.GoogleAuth;
+ });
+ l('FBAPPID',FBAPPID);
  let email='';
  let pass='';
  let error;
@@ -117,7 +128,15 @@ function deleteCookie( name ) {
 	</form>
     {:else if mode==='social'}
 	<h4>google sign-in</h4>
-	<GoogleAuth clientId={GOOGLECLIENTID} on:auth-success={googleAuth} />
-	<FacebookAuth appId={FBAPPID} scope='email' on:auth-success={fbAuthSuccess}/> <!--e => l('FB LOGIN:',e)} />-->
+	<svelte:component
+	    this={GoogleAuth}
+	    clientId={GOOGLECLIENTID}
+	    on:auth-success={googleAuth}/>
+
+	<svelte:component
+	    this={FacebookAuth}
+	    appId={FBAPPID}
+	    scope='email'
+	    on:auth-success={fbAuthSuccess}/>
     {/if}
 </Stack>
