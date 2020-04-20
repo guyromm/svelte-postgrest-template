@@ -5,7 +5,7 @@ import gal from 'google-auth-library';
 import pg from 'pg';
 import commandLineArgs from 'command-line-args';
 import createSubscriber from "pg-listen"
-import {select,selectOne,update} from '../../common/postgrest.js';
+import {select,selectOne,update} from '../common/postgrest.js';
 const l = console.log;
 const {OAuth2Client} = gal;
 const optionDefinitions = [

@@ -1,0 +1,28 @@
+* what & why?
+- [[https://svelte.dev/][svelte]] is the hot new FE dev kid. do [[https://svelte.dev/tutorial/basics][the tutorial]] to get hooked. [[https://sapper.svelte.dev/][sapper]] - its equivalent of SSR
+  framework, not unlike next.js
+- [[http://postgrest.org/][postgrest]] is a really nice backend to quickly prototype apps by
+  definining data & permissions, without having to write backend.
+- [[https://every-layout.dev/][every layout]] is a fresh approach to plain css, with reusable components that make sense. borrowed from [[https://github.com/SilvanCodes/svelte-layout-components][SilvanCodes/svelte-layout-components]].
+- some social login love thrown in for good measure, uses [[https://github.com/beyonk-adventures/svelte-social-auth][beyonk-adventures/svelte-social-auth]]
+- tmux & tmuxinator are used to run multiple processes and an editor, because nothing beats tmux and emacs (use [[http://web-mode.org/][web-mode]] to edit svelte!)
+* prequisites for dev env
+1. [[https://github.com/PostgREST/postgrest/releases/latest][postgrest]] - install according to [[http://postgrest.org/en/v6.0/tutorials/tut0.html][instructions]].
+2. [[https://github.com/tmuxinator/tmuxinator][tmuxinator]] - to run auth validation & postgrest, possibly other services - sudo apt install tmuxinator
+* database initialization
+1. sudo -u postgres psql template1 -c 'drop database svelte_postgrest_app'
+2. sudo -u postgres psql template1 -c 'create database svelte_postgrest_app'
+3. sudo -u postgres psql template1 -c "grant all on database svelte_postgrest_app to $USER"
+4. psql svelte_postgrest_app -c 'create extension pgjwt cascade';
+5. ls sql/auth/*sql | sort | xargs -n1 psql svelte_postgrest_app -f # auth schema
+* .env
+echo 'PGDSN=socket:/var/run/postgresql?db=svelte_postgrest_app' >> .env
+echo 'POSTGREST_BASE_URI=http://localhost:3004' >> .env
+echo 'GOOGLE_CLIENT_ID=xxxxx-xxxx.apps.googleusercontent.com' >> .env
+echo 'FACEBOOK_APP_ID=123412341234' >> .env
+* jwt_secret
+SEC=$(head /dev/urandom | tr -dc A-F0-9 | head -c 64 ; echo '')
+sed -i -E 's/jwt-secret="(.*)"/jwt-secret="'$SEC'"/g' postgrest.conf
+psql svelte_postgrest_app -c "ALTER DATABASE svelte_postgrest_app  SET app.jwt_secret = '$SEC'"
+* launch
+tmuxinator local

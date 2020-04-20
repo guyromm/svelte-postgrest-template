@@ -6,7 +6,6 @@
  const l = console.log;
  const FBAPPID=process.env.FACEBOOK_APP_ID;
  const GOOGLECLIENTID=process.env.GOOGLE_CLIENT_ID;
- l('FBAPPID',FBAPPID);
  let email='';
  let pass='';
  let error;
