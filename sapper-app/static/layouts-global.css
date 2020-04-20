@@ -1,0 +1,94 @@
+:root {
+	/* ratios for maintaining visual consistency */
+	--ratio: 1.55;
+	--s-5: calc(var(--s-4) / var(--ratio));
+	--s-4: calc(var(--s-3) / var(--ratio));
+	--s-3: calc(var(--s-2) / var(--ratio));
+	--s-2: calc(var(--s-1) / var(--ratio));
+	--s-1: calc(var(--s0) / var(--ratio));
+	--s0: 1rem;
+	--s1: calc(var(--s0) * var(--ratio));
+	--s2: calc(var(--s1) * var(--ratio));
+	--s3: calc(var(--s2) * var(--ratio));
+	--s4: calc(var(--s3) * var(--ratio));
+	--s5: calc(var(--s4) * var(--ratio));
+
+	/* zero value*/
+	--zero: 0;
+
+	/* measure width */
+	--measure: 60ch;
+
+	/* color scheme from colorsuplyyy */	
+	--color-primary: #ad1500;
+	--color-secondary: #ff9d05;
+	--color-ternary: #1900b3;
+
+
+
+
+	/* border widths */
+	--border-thin: var(--s-4);
+	--border-medium: var(--s-2);
+	--border-thick: var(--s-1);
+}
+
+* {
+	/* in general calculate from border-box */
+	box-sizing: border-box;
+
+	/* cap max-with for visual elements */
+	max-width: var(--measure);
+
+	/* clear default padding and margin*/
+	margin: 0;
+	padding: 0;
+}
+
+/* logical exceptions from measure rule */
+html,
+body,
+div,
+header,
+nav,
+main,
+footer,
+img,
+video {
+	max-width: none;
+}
+
+html, body, main {
+	height: 100%;
+}
+
+@font-face {
+	font-family: Bevan;
+	src: url(fonts/Bevan-Regular.ttf);
+}
+
+h1, h2, h3, h4, h5 {
+	font-family: Bevan;
+	font-size: var(--s1);
+}
+
+@font-face {
+	font-family: JosefinSlab;
+	src: url(fonts/JosefinSlab-Regular.ttf);
+}
+
+@font-face {
+	font-family: JosefinSlab;
+	src: url(fonts/JosefinSlab-Bold.ttf);
+	font-weight: bold;
+}
+
+p {
+	font-family: JosefinSlab;
+	font-size: var(--s1);
+}
+
+a {
+	color: var(--color-secondary);
+	cursor: pointer;
+}
