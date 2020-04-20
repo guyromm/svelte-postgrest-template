@@ -27,8 +27,7 @@ begin
 	 on conflict (email) do
 	 update set
 	 	validation_info=vinfo,
-		validated=null,
-		pass=ps
+		validated=null
 		where users.email=em;
   return login(em,ps);
 end;
