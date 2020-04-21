@@ -12,17 +12,17 @@
 2. [[https://github.com/tmuxinator/tmuxinator][tmuxinator]] - to run auth validation & postgrest, possibly other services - sudo apt install tmuxinator
 3. [[https://github.com/nvm-sh/nvm][nvm]] - to easily swap node/npm versions. tested with node v13.11.0.
 * cloning
-#+BEGIN_SRC sh
+#+BEGIN_SRC bash
 npx degit https://github.com/guyromm/svelte-postgrest-template svelte-postgrest-app
 #+END_SRC
 * package.json dependencies
-#+BEGIN_SRC sh
+#+BEGIN_SRC bash
 nvm use && cd sapper-app ; npm i ; cd -
 nvm use && cd common ; npm i ; cd -
 nvm use && cd cli ; npm i ; cd -
 #+END_SRC
 * database initialization
-#+BEGIN_SRC sh
+#+BEGIN_SRC bash
 sudo -u postgres psql template1 -c 'drop database svelte_postgrest_app'
 sudo -u postgres psql template1 -c 'create database svelte_postgrest_app'
 sudo -u postgres psql template1 -c "grant all on database svelte_postgrest_app to $USER"
@@ -30,20 +30,20 @@ psql svelte_postgrest_app -c 'create extension pgjwt cascade';
 ls sql/auth/*sql | sort | xargs -n1 psql svelte_postgrest_app -f # auth schema
 #+END_SRC
 * .env
-#+BEGIN_SRC sh
+#+BEGIN_SRC bash
 echo 'PGDSN=socket:/var/run/postgresql?db=svelte_postgrest_app' >> .env
 echo 'POSTGREST_BASE_URI=http://localhost:3004' >> .env
 echo 'GOOGLE_CLIENT_ID=xxxxx-xxxx.apps.googleusercontent.com' >> .env
 echo 'FACEBOOK_APP_ID=123412341234' >> .env
 #+END_SRC
 * jwt_secret
-#+BEGIN_SRC sh
+#+BEGIN_SRC bash
 SEC=$(head /dev/urandom | tr -dc A-F0-9 | head -c 64 ; echo '')
 sed -i -E 's/jwt-secret="(.*)"/jwt-secret="'$SEC'"/g' postgrest.conf
 psql svelte_postgrest_app -c "ALTER DATABASE svelte_postgrest_app  SET app.jwt_secret = '$SEC'"
 #+END_SRC
 * launch
-#+BEGIN_SRC sh
+#+BEGIN_SRC bash
 tmuxinator local
 #+END_SRC
 
