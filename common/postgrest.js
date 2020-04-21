@@ -13,6 +13,7 @@ export const hdrs = {'Content-Type':'application/json'};
 export async function F() {
   return (!isnode()?fetch:(await import('node-fetch')).default);
 }
+
 export async function login(login,pass,mode='login',validation_info=null) {
     let payload={};
     let h = {...hdrs};
@@ -45,27 +46,46 @@ export async function login(login,pass,mode='login',validation_info=null) {
     return json[0];
 }
 export async function getHeaders() {
-    let cookie;
-    if ((typeof process !== 'undefined') && process.env.jwt_token)
+    let cookie,gad;
+    if ((typeof process !== 'undefined') && process.env.JWT_TOKEN)
     {
         //l('GOT a token biatch!');
-        cookie = process.env.jwt_token;
-        //l('obtained cookie',cookie,'from process.env.jwt_token');
+        cookie = process.env.JWT_TOKEN;
+        //l('obtained cookie',cookie,'from process.env.JWT_TOKEN');
+	gad = getAuthData(cookie);
     }
+
     if ((typeof process !== 'undefined') &&
-	!process.env.jwt_token &&
-	process.env.jwt_login &&
-	process.env.jwt_pass)
+	(gad && gad.is_expired) || 
+	(!process.env.JWT_TOKEN &&
+	 process.env.POSTGREST_CLI_LOGIN &&
+	 process.env.POSTGREST_CLI_PASS)
+       )
     {
-      let json = await login(process.env.jwt_login,
-			     process.env.jwt_pass);
-      if (json && json.token)
-	process.env.jwt_token = cookie = json.token;
+	const lurl = DB()+'/rpc/login';
+        let res = await fetch(lurl,
+            {method:'POST',
+                headers:hdrs,
+                body:JSON.stringify({email:process.env.POSTGREST_CLI_LOGIN,
+						    pass:process.env.POSTGREST_CLI_PASS})});
+	
+        let txt,json;
+        try {
+	    txt = await res.text();
+	    json = JSON.parse(txt);
+	    process.env.JWT_TOKEN = cookie = json[0].token;
+        } catch (err) {
+	    l('error obtaining json from res',err);
+	    l('login error is',txt);
+	    throw err;
+        }
+        //throw "login attempt resulted in "+process.env.JWT_TOKEN;
+
     }
-    else if (isnode() && !process.env.jwt_token)
+    else if (isnode() && !process.env.JWT_TOKEN)
     {
         l('process:',process);
-        throw Error('NO AUTH (process.env.jwt_token) in cli invocation.');
+        throw Error('NO AUTH (process.env.JWT_TOKEN) in cli invocation.');
     }
     else if (!isnode())
     {
@@ -78,7 +98,10 @@ export async function getHeaders() {
         //throw 'getting auth data?';
         let gad = getAuthData(cookie);
         //l('getAuthData=',gad);
-        if (gad.is_expired && document.cookie)
+        if (gad.is_expired &&
+	    (!isnode() &&
+	     (document &&
+	      document.cookie)))
         {
 	    document.cookie='auth=';
 	    return getHeaders();
@@ -86,9 +109,9 @@ export async function getHeaders() {
     }
     if (cookie)
         return {...hdrs,'Authorization':'Bearer '+cookie};
-    else if (process.env.jwt_token)
+    else if (process.env.JWT_TOKEN)
         return {...hdrs,
-            'Authorization':'Bearer '+process.env.jwt_token};
+            'Authorization':'Bearer '+process.env.JWT_TOKEN};
     else if (typeof document !== 'undefined' &&
 	     document &&
 	     !window.location.pathname.startsWith('/auth'))
@@ -104,7 +127,6 @@ export async function getHeaders() {
 }
 export function getCookie(name='auth') {
     const rt = Object.fromEntries(document.cookie.split('; ').map(x=>x.split('=')).filter(x=>x[1]))[name];
-    //l('getCookie =>',rt);
     return rt;
 }
 export function getAuthData(tok) {
@@ -123,7 +145,6 @@ export function getAuthData(tok) {
         if (typeof tok === undefined) throw 'bad token!';
         rt.auth=tok;
         rt.auth_decoded = jwt_decode(tok);
-	//l('jwt_decode',tok,'=>',rt.auth_decoded);
         let now = new Date();
         rt.exp = new Date(rt.auth_decoded.exp*1000);
         if (now>rt.exp)
@@ -162,14 +183,13 @@ export async function update(path,doc,errok,key=['id']) {
 		l(k,'is',typeof js);
 	}
         l('attempted to update',str.length,'long doc');
-        throw Error("could not update "+path+" with "+cond+" ("+res.status+"): "+res.statusText)
+        throw Error("could not update "+path+" with "+cond+" ("+res.status+"): "+res.statusText+' with key '+JSON.stringify(key)+' valued '+JSON.stringify(Object.entries(doc).filter(x=>key.includes(x[0]))));
     }
     return res;
 }
 export async function upsert(path,obj,key=['id']) {
     if (typeof key!=='object') throw 'wrong key type in upsert';
     let res = await insert(path,obj,true);
-    //l('upsert pt1',res);
     if (res.status===409)
     {
         let res2 = await update(path,obj,false,key);
