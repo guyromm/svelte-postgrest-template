@@ -62,7 +62,7 @@ export async function getHeaders() {
 	 process.env.POSTGREST_CLI_PASS)
        )
     {
-	const lurl = DB()+'/rpc/login';
+	const lurl = DB+'/rpc/login';
         let res = await fetch(lurl,
             {method:'POST',
                 headers:hdrs,
@@ -79,7 +79,6 @@ export async function getHeaders() {
 	    l('login error is',txt);
 	    throw err;
         }
-        //throw "login attempt resulted in "+process.env.JWT_TOKEN;
 
     }
     else if (isnode() && !process.env.JWT_TOKEN)
