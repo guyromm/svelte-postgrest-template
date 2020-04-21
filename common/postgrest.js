@@ -66,8 +66,8 @@ export async function getHeaders() {
         let res = await fetch(lurl,
             {method:'POST',
                 headers:hdrs,
-                body:JSON.stringify({email:process.env.POSTGREST_CLI_LOGIN,
-						    pass:process.env.POSTGREST_CLI_PASS})});
+                body:JSON.stringify({em:process.env.POSTGREST_CLI_LOGIN,
+				     ps:process.env.POSTGREST_CLI_PASS})});
 	
         let txt,json;
         try {
