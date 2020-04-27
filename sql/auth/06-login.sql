@@ -17,7 +17,7 @@ begin
     ) as token
     from (
       select
-	_role as role,
+	concat(_role,(CASE WHEN _validated is null THEN '_unvalidated' ELSE '' END)) as role,
         login.em as email,
         _validated as validated,
         extract(epoch from now())::integer + 60*60 as exp
@@ -41,7 +41,7 @@ begin
     ) as token
     from (
       select
-	role,
+	concat(role,(CASE WHEN validated is null THEN '_unvalidated' ELSE '' END)) as role,      
         email,
         validated,
         extract(epoch from now())::integer + 60*60 as exp
