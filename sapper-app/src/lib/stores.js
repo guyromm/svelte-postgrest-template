@@ -9,7 +9,10 @@ export const parseToken = () => {
     try {
 	const add = (token && getAuthData(token));
 	const ad = (add && add.auth_decoded);
-	no = ad && {...ad,exp:add.exp};
+      no = ad && {...ad
+		  ,exp:add.exp
+		  ,is_expired:add.is_expired
+		 };
     } catch (err) {
 	no={};
     }

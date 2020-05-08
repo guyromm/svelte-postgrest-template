@@ -27,7 +27,8 @@
      else throw new Error('unknown situation refresh-wise');
      let sinceSecs = (new Date() - lastRefresh)/1000;
      //l('sinceSecs=',sinceSecs,'interval=',interval);
-     if (interval && (!lastRefresh || sinceSecs>interval)) {
+     if ((interval && !authData.is_expired) &&
+	 (!lastRefresh || sinceSecs>interval)) {
 	 lastRefresh = new Date();
 	 const lres = await login(null,null,'refresh');
 	 if (lres && lres.token)

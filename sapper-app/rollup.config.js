@@ -19,11 +19,18 @@ let clirepl = {
     'process.browser': true,
     'process.env.NODE_ENV': JSON.stringify(mode)
 };
-for (let env of ['POSTGREST_BASE_URI','GOOGLE_CLIENT_ID','FACEBOOK_APP_ID'])
+for (let env of ['POSTGREST_BASE_URI',
+		 'GOOGLE_CLIENT_ID',
+		 'FACEBOOK_APP_ID',
+		 ])
 {
     clirepl['process.env.'+env]=JSON.stringify(process.env[env]);
     console.log('rollup client replace:',env,'=>',process.env[env]);
 }
+for (let env of ['JWT_TOKEN',
+		 'POSTGREST_CLI_LOGIN',
+		 'POSTGREST_CLI_PASS'])
+  clirepl['process.env.'+env]=JSON.stringify(undefined);
 
 
 export default {

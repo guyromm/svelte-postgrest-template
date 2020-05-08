@@ -115,7 +115,7 @@ export async function getHeaders() {
 	     document &&
 	     !window.location.pathname.startsWith('/auth'))
     {
-        let rdirt='/auth?redir='+encodeURIComponent(window.location.href);
+        let rdirt='/auth/login?redir='+encodeURIComponent(window.location.href);
         //l('cookie=',cookie);
         //throw Error('redirecting to '+rdirt);
         window.location.href=rdirt
@@ -163,7 +163,7 @@ export async function update(path,doc,errok,key=['id']) {
     let cond = qs.stringify(keys);
     //throw 'cond='+cond;
     const updurl = DB+'/'+path+'?'+cond;
-    l('PATCHing',updurl,'with',str.length);
+    //l('PATCHing',updurl,'with',str.length);
     //l('updurl=',updurl); l('body:',doc)
     let res = await fetch(updurl,
 			  {method:'PATCH',
@@ -228,6 +228,8 @@ export async function select(path,args) {
 	} catch (err) {
 	    throw new Error('could not json parse the response '+txt);
 	}
+	if (json.message && json.message.startsWith('JWSError'))
+	    throw new Error(json); //l(path,args,'=>',json);
         return json;
     }
     catch (err) {

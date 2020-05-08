@@ -1,8 +1,10 @@
 <script>
  import { onMount } from 'svelte';
+  import {goto} from '@sapper/app';
  import {Switcher,Box,Stack} from '../components/layout';
  import {login,getAuthData,getCookie} from '../../../common/postgrest.js';
  import {parseToken,authDataStore} from '../lib/stores.js';
+ import {parse} from 'qs';
  const l = console.log;
  const FBAPPID=process.env.FACEBOOK_APP_ID;
  const GOOGLECLIENTID=process.env.GOOGLE_CLIENT_ID;
@@ -12,11 +14,9 @@
 
  onMount(async () => {
      const module = await import('@beyonk/svelte-social-auth');
-     l('imported social auth',module);
      FacebookAuth = module.FacebookAuth;     
      GoogleAuth = module.GoogleAuth;
  });
- l('FBAPPID',FBAPPID);
  let email='';
  let pass='';
  let error;
@@ -33,10 +33,16 @@
 	 //l('login returned',lres);
 	 if (lres) // && lres.token)
 	 {
-	 l('setting document.cookie auth to',lres.token);
+	 l('setting document.cookie auth to',lres.token,'am at',location.search);
 	     document.cookie='auth='+lres.token;
 	     parseToken();
 	     error=undefined;
+	     let search = parse(location.search.slice(1));
+	     if (search.redir)
+	     {
+	     l('gotta redir to',search.redir);
+	     goto(search.redir);
+	     }
 	 }
 	 error='could not '+mode;
 	 }
@@ -87,10 +93,11 @@ function deleteCookie( name ) {
  }
  export let mode;
  const setMode = (nm) => mode=nm;
+ 
 </script>
 
 <h4>authentication</h4>
-{#if !authData}
+{#if !authData || authData.is_expired}
 <Switcher>
 	{#each ['login','register','social'] as act}
 	    <Box>
@@ -103,12 +110,13 @@ function deleteCookie( name ) {
 </Switcher>
 {/if}
 <Stack>
-    {#if authData}
+    {#if authData && !authData.is_expired}
 	<h4>logged in</h4>
 	<Box>role: {authData.role}</Box>
 	<Box>email: {authData.email}</Box>
 	<Box>validated: {authData.validated}</Box>	
 	<Box>expiry: {((new Date(authData.exp)-new Date())/1000/3600).toLocaleString()}h</Box>
+	<Box>is expired: {authData.is_expired}</Box>
 	<button on:click={performLogout}>logout</button>
     {:else if mode==='login'}
 	<h4>login</h4>    
