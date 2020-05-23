@@ -14,6 +14,8 @@ export async function F() {
   return (!isnode()?fetch:(await import('node-fetch')).default);
 }
 
+let JWT_TOKEN=null;
+
 export async function login(login,pass,mode='login',validation_info=null) {
     let payload={};
     let h = {...hdrs};
@@ -47,17 +49,17 @@ export async function login(login,pass,mode='login',validation_info=null) {
 }
 export async function getHeaders() {
     let cookie,gad;
-    if ((typeof process !== 'undefined') && process.env.JWT_TOKEN)
+    if ((typeof process !== 'undefined') && JWT_TOKEN)
     {
         //l('GOT a token biatch!');
-        cookie = process.env.JWT_TOKEN;
-        //l('obtained cookie',cookie,'from process.env.JWT_TOKEN');
+        cookie = JWT_TOKEN;
+        //l('obtained cookie',cookie,'from JWT_TOKEN');
 	gad = getAuthData(cookie);
     }
 
     if ((typeof process !== 'undefined') &&
 	(gad && gad.is_expired) || 
-	(!process.env.JWT_TOKEN &&
+	(!JWT_TOKEN &&
 	 process.env.POSTGREST_CLI_LOGIN &&
 	 process.env.POSTGREST_CLI_PASS)
        )
@@ -73,7 +75,7 @@ export async function getHeaders() {
         try {
 	    txt = await res.text();
 	    json = JSON.parse(txt);
-	    process.env.JWT_TOKEN = cookie = json[0].token;
+	    JWT_TOKEN = cookie = json[0].token;
         } catch (err) {
 	    l('error obtaining json from res',err);
 	    l('login error is',txt);
@@ -81,10 +83,10 @@ export async function getHeaders() {
         }
 
     }
-    else if (isnode() && !process.env.JWT_TOKEN)
+    else if (isnode() && !JWT_TOKEN)
     {
         l('process:',process);
-        throw Error('NO AUTH (process.env.JWT_TOKEN) in cli invocation.');
+        throw Error('NO AUTH (JWT_TOKEN) in cli invocation.');
     }
     else if (!isnode())
     {
@@ -108,9 +110,9 @@ export async function getHeaders() {
     }
     if (cookie)
         return {...hdrs,'Authorization':'Bearer '+cookie};
-    else if (process.env.JWT_TOKEN)
+    else if (JWT_TOKEN)
         return {...hdrs,
-            'Authorization':'Bearer '+process.env.JWT_TOKEN};
+            'Authorization':'Bearer '+JWT_TOKEN};
     else if (typeof document !== 'undefined' &&
 	     document &&
 	     !window.location.pathname.startsWith('/auth'))
@@ -153,6 +155,14 @@ export function getAuthData(tok) {
         //l('AUTH',rt.auth,rt.auth_decoded,now,exp,now>exp);
     }
     return rt;
+}
+export async function del(path,conds={}) {
+  if (!Object.entries(conds).length) throw new Error('conds is empty.');
+  let res = await fetch(DB+'/'+path+'?'+qs.stringify(conds),
+			{
+			  method:'DELETE',
+			  headers:await getHeaders()});
+  return res;
 }
 export async function update(path,doc,errok,key=['id']) {
     //l('IN UPDATE',doc.parsed.scores); throw 'bye';
@@ -214,16 +224,26 @@ export async function insert(path,obj,errok) {
 }
 
 export async function select(path,args) {
-    if (!DB) throw new Error('DB not defined.');
+  if (!DB) throw new Error('DB not defined.');
+  let h = await getHeaders();
     let res = await fetch(DB+'/'+path+'?'+qs.stringify(args),
 			  {method:'GET',
-			   headers:await getHeaders()
+			   headers:h
 			  })
     let txt,json;
     try {
         txt = await res.text();
 	try {
-            json = JSON.parse(txt);
+          json = JSON.parse(txt);
+	  if (json.message==='JWT expired' || res.code===401)
+	  {
+	    l('headers',h);
+	    let cookie = getCookie('auth');
+	    l('cookie is',cookie);
+	    let dec = jwt_decode(cookie);
+	    l('dec=',dec);
+	    throw new Error('jwt has expired wtf');
+	  }
             if (json.code && json.message) throw new Error("select from "+path+" errored with code "+json.code+"; "+json.message);
 	} catch (err) {
 	    throw new Error('could not json parse the response '+txt);
