@@ -21,28 +21,39 @@ nvm use && cd sapper-app ; npm i ; cd -
 nvm use && cd common ; npm i ; cd -
 nvm use && cd cli ; npm i ; cd -
 #+END_SRC
+* .env
+#+BEGIN_SRC bash
+echo 'DBNAME=svelte_postgrest_app' >> .env
+echo 'APPNAME=svelte_postgrest_app' >> .env
+echo 'POSTGRESTPORT=3007' >> .env
+echo 'PGDSN=socket:/var/run/postgresql?db=svelte_postgrest_app >> .env
+echo 'POSTGREST_BASE_URI=http://localhost:3007' >> .env
+echo 'GOOGLE_CLIENT_ID=xxxxx-xxxx.apps.googleusercontent.com' >> .env
+echo 'FACEBOOK_APP_ID=123412341234' >> .env
+#+END_SRC
+
+#+RESULTS:
+
 * database initialization
 #+BEGIN_SRC bash
-DBNAME=svelte_postgrest_app
+source .env
+echo 'DBNAME:'$DBNAME
 sudo -u postgres psql template1 -c 'drop database '$DBNAME
 sudo -u postgres psql template1 -c 'create database '$DBNAME
 sudo -u postgres psql template1 -c "grant all on database $DBNAME to $USER"
 psql $DBNAME -c 'create extension pgjwt cascade';
 ls sql/auth/*sql | sort | xargs -n1 psql $DBNAME -f # auth schema
 #+END_SRC
-* .env
-#+BEGIN_SRC bash
-echo 'PGDSN=socket:/var/run/postgresql?db=svelte_postgrest_app' >> .env
-echo 'POSTGREST_BASE_URI=http://localhost:3004' >> .env
-echo 'GOOGLE_CLIENT_ID=xxxxx-xxxx.apps.googleusercontent.com' >> .env
-echo 'FACEBOOK_APP_ID=123412341234' >> .env
-#+END_SRC
 * jwt_secret
 #+BEGIN_SRC bash
+source .env
 SEC=$(head /dev/urandom | tr -dc A-F0-9 | head -c 64 ; echo '')
 echo 'DBNAME:'$DBNAME
+echo 'SEC:'$SEC
 sed -i -E 's/jwt-secret=".*"/jwt-secret="'$SEC'"/g' postgrest.conf
 sed -i -E 's/db-uri=".*"/db-uri="postgres:\/\/\/'$DBNAME'"/g' postgrest.conf
+sed -i -E 's/server-port = .*/server-port = '$POSTGRESTPORT'/g' postgrest.conf
+sed -i -E 's/^name: .*/name: '$APPNAME'/g' .tmuxinator.yml
 psql $DBNAME -c "ALTER DATABASE $DBNAME SET app.jwt_secret = '$SEC'"
 #+END_SRC
 * launch
