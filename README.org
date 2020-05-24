@@ -23,11 +23,12 @@ nvm use && cd cli ; npm i ; cd -
 #+END_SRC
 * database initialization
 #+BEGIN_SRC bash
-sudo -u postgres psql template1 -c 'drop database svelte_postgrest_app'
-sudo -u postgres psql template1 -c 'create database svelte_postgrest_app'
-sudo -u postgres psql template1 -c "grant all on database svelte_postgrest_app to $USER"
-psql svelte_postgrest_app -c 'create extension pgjwt cascade';
-ls sql/auth/*sql | sort | xargs -n1 psql svelte_postgrest_app -f # auth schema
+DBNAME=svelte_postgrest_app
+sudo -u postgres psql template1 -c 'drop database '$DBNAME
+sudo -u postgres psql template1 -c 'create database '$DBNAME
+sudo -u postgres psql template1 -c "grant all on database $DBNAME to $USER"
+psql $DBNAME -c 'create extension pgjwt cascade';
+ls sql/auth/*sql | sort | xargs -n1 psql $DBNAME -f # auth schema
 #+END_SRC
 * .env
 #+BEGIN_SRC bash
@@ -39,8 +40,10 @@ echo 'FACEBOOK_APP_ID=123412341234' >> .env
 * jwt_secret
 #+BEGIN_SRC bash
 SEC=$(head /dev/urandom | tr -dc A-F0-9 | head -c 64 ; echo '')
-sed -i -E 's/jwt-secret="(.*)"/jwt-secret="'$SEC'"/g' postgrest.conf
-psql svelte_postgrest_app -c "ALTER DATABASE svelte_postgrest_app  SET app.jwt_secret = '$SEC'"
+echo 'DBNAME:'$DBNAME
+sed -i -E 's/jwt-secret=".*"/jwt-secret="'$SEC'"/g' postgrest.conf
+sed -i -E 's/db-uri=".*"/db-uri="postgres:\/\/\/'$DBNAME'"/g' postgrest.conf
+psql $DBNAME -c "ALTER DATABASE $DBNAME SET app.jwt_secret = '$SEC'"
 #+END_SRC
 * launch
 #+BEGIN_SRC bash
