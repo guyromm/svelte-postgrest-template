@@ -1,4 +1,4 @@
-name: svelte-postgrest-template
+name: svelte_postgrest_app
 windows:
   - postgrest: postgrest postgrest.conf
   - validation: nvm use && cli/token_verify-worker.js -l

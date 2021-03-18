@@ -9,7 +9,6 @@ begin
   );
 end;
 $$;
-ALTER FUNCTION basic_auth.user_role(email text, pass text) OWNER TO milez;
 
 CREATE or replace FUNCTION basic_auth.user_validated(email text, pass text)
 RETURNS timestamptz
@@ -23,4 +22,4 @@ begin
   );
 end;
 $$;
-ALTER FUNCTION basic_auth.user_validated(email text, pass text) OWNER TO milez;
+

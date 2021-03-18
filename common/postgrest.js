@@ -14,122 +14,185 @@ export async function F() {
   return (!isnode()?fetch:(await import('node-fetch')).default);
 }
 
-let JWT_TOKEN=null;
-
 export async function login(login,pass,mode='login',validation_info=null) {
-    let payload={};
-    let h = {...hdrs};
-    if (mode==='refresh')
-	h=await getHeaders();
-    else
-	payload = {em:login,
-		   ps:pass,
-		  };
-    if (validation_info) payload.vinfo=validation_info;
-    let f = await F();
-    //l('attempting to',mode,'with payload',payload);
-    const furl = DB+'/rpc/'+mode;
-    let res = await f(furl,
-		      {method:'POST',
-		       headers:h,
-		       body:JSON.stringify(payload)});
+  let payload={};
+  let h = {...hdrs};
+  if (mode==='refresh')
+    h=await getHeaders();
+  else
+    payload = {em:login,
+	       ps:pass,
+	      };
+  if (validation_info) payload.vinfo=validation_info;
+  let f = await F();
+  //l('attempting to',mode,'with payload',payload);
+  const furl = DB+'/rpc/'+mode;
+  let res = await f(furl,
+		    {method:'POST',
+		     headers:h,
+		     body:JSON.stringify(payload)});
+  let txt,json;
+  try {
+    txt = await res.text();
+    json = JSON.parse(txt);
+    //l(furl,payload,'response:',json);
+    if (json.code) throw new Error('could not login');
+    if (!json.length===1) throw new Error('wrong length returned by login response.');
+  } catch (err) {
+    l('error obtaining json from res',err);
+    l('login error is',txt);
+    //throw err;
+    let cause = txt && txt.includes('already exists')?'user exists':'unknown';
+    return {status:'error',error:err,cause,json,txt}
+  }
+  return {status:'ok',result:json[0]};
+  //return json[0];
+}
+
+function redirToAuth() {
+  if (isnode()) throw new Error('authentication error');
+  let rdirt='/auth/login?redir='+encodeURIComponent(window.location.href);
+  //throw new Error('about to redir to /auth/login with redir'+window.location.href);
+  window.location.href=rdirt;
+}
+
+export async function authLogic(rta) {
+  //l('ORIGINAL AUTH FUNC');
+  let cookie,gad,headers;
+  //l('JWT TOKEN=',CFG.JWT_TOKEN);
+  //l('CFG',CFG);
+  //if (!CFG.JWT_TOKEN) throw new Error('no jwt token biatch');
+  if (CFG.JWT_TOKEN)
+  {
+    //l('GOT a token set as global var',CFG.JWT_TOKEN);
+    cookie = CFG.JWT_TOKEN;
+    gad = getAuthData(cookie);
+  }
+  else if (CFG.login && CFG.pass)
+  {
+    //l('got a login/password in config.');
+    const lurl = DB+'/rpc/login';
+    let res = await fetch(lurl,
+			  {method:'POST',
+			   headers:hdrs,
+			   body:JSON.stringify({em:CFG.login,
+						ps:CFG.pass})});
     let txt,json;
     try {
-	txt = await res.text();
-	json = JSON.parse(txt);
-	//l(furl,payload,'response:',json);
-	if (json.code) throw new Error('could not login');
-	if (!json.length===1) throw new Error('wrong length returned by login response.');
+      txt = await res.text();
+      json = JSON.parse(txt);
+      if (json.length)
+      {
+	l('assigning a new token from json',json);
+	CFG.JWT_TOKEN = cookie = json[0].token;
+      }
+      else { l(json); throw new Error('could not find token in auth response'); }
     } catch (err) {
-	l('error obtaining json from res',err);
-	l('login error is',txt);
-	throw err;
-    }  
-    return json[0];
+      l('error obtaining json from res',err);
+      l('login error is',txt);
+      throw err;
+    }
+  }
+  else
+  {
+    //l('invoking redirToAuth');
+    await CFG.redirToAuth();
+  }
+
+  //cookie = CFG.JWT_TOKEN;
+  if (cookie)
+  {
+    //l('examining for expiry.');
+    let gad = getAuthData(cookie);
+    if (gad.is_expired)
+    {
+      l('expired token.',gad);
+      CFG.JWT_TOKEN=undefined;
+      return await authLogic(rta);
+    }
+  }
+  if (cookie)
+  {
+    //l('returning header with bearer',cookie);
+    return {...hdrs,'Authorization':'Bearer '+cookie};
+  }
+  else if (rta) rta();
+  return {cookie,gad,hdrs}
 }
+
+export async function webAuthLogic () {
+  const sc = {JWT_TOKEN:getCookie('auth')};
+  setConfig(sc);
+  return await authLogic();
+}
+
+export async function cliAuthLogic() {
+  setConfig({login:process.env.POSTGREST_CLI_LOGIN,
+	     pass:process.env.POSTGREST_CLI_PASS});
+  return await authLogic();
+}
+
+export async function isoAuthLogic() {
+    if (isnode()) return await cliAuthLogic();
+    else return await webAuthLogic();
+}
+
+let CFG={authLogic:isoAuthLogic,redirToAuth};
+
+export function setConfig(args) {
+  //l('setConfig',args);
+  for (const [k,v] of Object.entries(args)) CFG[k]=v;
+}
+
+export function getConfig() {
+    return CFG;
+}
+
 export async function getHeaders() {
-    let cookie,gad;
-    if ((typeof process !== 'undefined') && JWT_TOKEN)
-    {
-        //l('GOT a token biatch!');
-        cookie = JWT_TOKEN;
-        //l('obtained cookie',cookie,'from JWT_TOKEN');
-	gad = getAuthData(cookie);
-    }
-
-    if ((typeof process !== 'undefined') &&
-	(gad && gad.is_expired) || 
-	(!JWT_TOKEN &&
-	 process.env.POSTGREST_CLI_LOGIN &&
-	 process.env.POSTGREST_CLI_PASS)
-       )
-    {
-	const lurl = DB+'/rpc/login';
-        let res = await fetch(lurl,
-            {method:'POST',
-                headers:hdrs,
-                body:JSON.stringify({em:process.env.POSTGREST_CLI_LOGIN,
-				     ps:process.env.POSTGREST_CLI_PASS})});
-	
-        let txt,json;
-        try {
-	    txt = await res.text();
-	    json = JSON.parse(txt);
-	    JWT_TOKEN = cookie = json[0].token;
-        } catch (err) {
-	    l('error obtaining json from res',err);
-	    l('login error is',txt);
-	    throw err;
-        }
-
-    }
-    else if (isnode() && !JWT_TOKEN)
-    {
-        l('process:',process);
-        throw Error('NO AUTH (JWT_TOKEN) in cli invocation.');
-    }
-    else if (!isnode())
-    {
-        //l('getting from cookie!');
-        cookie = getCookie('auth');
-        //l('gotten cookie',cookie);
-    }
-    if (cookie)
-    {
-        //throw 'getting auth data?';
-        let gad = getAuthData(cookie);
-        //l('getAuthData=',gad);
-        if (gad.is_expired &&
-	    (!isnode() &&
-	     (document &&
-	      document.cookie)))
-        {
-	    document.cookie='auth=';
-	    return getHeaders();
-        }
-    }
-    if (cookie)
-        return {...hdrs,'Authorization':'Bearer '+cookie};
-    else if (JWT_TOKEN)
-        return {...hdrs,
-            'Authorization':'Bearer '+JWT_TOKEN};
-    else if (typeof document !== 'undefined' &&
-	     document &&
-	     !window.location.pathname.startsWith('/auth'))
-    {
-        let rdirt='/auth/login?redir='+encodeURIComponent(window.location.href);
-        //l('cookie=',cookie);
-        //throw Error('redirecting to '+rdirt);
-        window.location.href=rdirt
-    }
-    else
-        return hdrs;
-
+  const al = await CFG.authLogic(CFG.redirToAuth);
+    //l('authLogic returned',al,'into',al);
+  return al;
 }
+
+
 export function getCookie(name='auth') {
-    const rt = Object.fromEntries(document.cookie.split('; ').map(x=>x.split('=')).filter(x=>x[1]))[name];
-    return rt;
+  const rt= readCookie(name);
+  //l('readCookie',name,'=>',rt);
+  return rt;
 }
+
+export function createCookie(name,value,days) {
+    if (days) {
+        var date = new Date();
+        date.setTime(date.getTime() + (days * 24 * 60 * 60 *1000));
+        var expires = "; expires=" + date.toGMTString();
+    } else {
+        var expires = "";
+    }
+    document.cookie = name + "=" + value + expires + ";path=/";
+}
+
+function readCookie(name) {
+  var nameEQ = name + "=";
+  var ca = document.cookie.split(';');
+  for(var i=0;i < ca.length;i++) {
+    var c = ca[i];
+    while (c.charAt(0)==' ') {
+      c = c.substring(1,c.length);
+    }
+    if (c.indexOf(nameEQ) == 0) {
+      return c.substring(nameEQ.length,c.length);
+    }
+  }
+  return null;
+}
+
+export function eraseCookie(name) {
+  //l('current',readCookie(name));
+  createCookie(name,"",-1);
+}
+
+
 export function getAuthData(tok) {
     let rt = {};
     if (!tok)
@@ -169,7 +232,13 @@ export async function update(path,doc,errok,key=['id']) {
     if (typeof key!=='object') throw 'wrong key type in update';
     //l('updating',path,doc[xokey]);throw 'bye';
     let str = JSON.stringify(doc);
-    let keys = Object.fromEntries(Object.entries(doc).filter(df=>key.indexOf(df[0])!==-1).map(df=>[df[0],'eq.'+df[1]]));
+    let keys;
+    if (Array.isArray(key))
+	keys = Object.fromEntries(Object.entries(doc)
+				  .filter(df=>key.indexOf(df[0])!==-1)
+				  .map(df=>[df[0],'eq.'+df[1]]));
+    else
+	keys = Object.fromEntries(Object.entries(key).map(([k,v])=>([k,'eq.'+v])));
     let cond = qs.stringify(keys);
     //throw 'cond='+cond;
     const updurl = DB+'/'+path+'?'+cond;
@@ -191,8 +260,9 @@ export async function update(path,doc,errok,key=['id']) {
 	    else
 		l(k,'is',typeof js);
 	}
-        l('attempted to update',str.length,'long doc');
-        throw Error("could not update "+path+" with "+cond+" ("+res.status+"): "+res.statusText+' with key '+JSON.stringify(key)+' valued '+JSON.stringify(Object.entries(doc).filter(x=>key.includes(x[0]))));
+      l('attempted to update',str.length,'long doc');
+      l('res',(await res.text()));
+        throw Error("could not update "+path+" with "+cond+" ("+res.status+"): "+res.statusText+' with key '+JSON.stringify(key)+' valued '+JSON.stringify(Object.entries(doc).filter(x=>(Array.isArray(key) && key.includes(x[0])))));
     }
     return res;
 }
@@ -206,10 +276,12 @@ export async function upsert(path,obj,key=['id']) {
         return res2;
     }
     else
+    {
         return res;
+    }
 }
-export async function insert(path,obj,errok) {
-    let h = await getHeaders();
+export async function insert(path,obj,errok,headersOverride={}) {
+  let h = {...await getHeaders(),...headersOverride};
     //l('using headers',h);
     let res = await fetch(DB+'/'+path,
         {method:'POST',
@@ -226,6 +298,7 @@ export async function insert(path,obj,errok) {
 export async function select(path,args) {
   if (!DB) throw new Error('DB not defined.');
   let h = await getHeaders();
+
     let res = await fetch(DB+'/'+path+'?'+qs.stringify(args),
 			  {method:'GET',
 			   headers:h
@@ -266,3 +339,36 @@ export async function selectOne(path,args,errOk=false) {
     else
         return null;
 }
+
+
+export async function pass_reset (email) {
+  return await fetch(
+  `${DB}/rpc/pass_reset`, {
+    method: 'POST',
+    headers: { ...hdrs },
+    body: JSON.stringify({ email })
+  })
+}
+
+export async function pass_reset_new (obj) {
+  return await fetch(
+  `${DB}/rpc/pass_reset_new`, {
+    method: 'POST',
+    headers: { ...hdrs },
+    body: JSON.stringify(obj)
+  })
+} 
+
+export  async function validateByToken(token,authData) {
+    if (token) {
+      let f = await fetch(DB+'/rpc/validate_token',
+        {method:'POST',
+          headers:hdrs,
+          body:JSON.stringify({token})});
+      let j = await f.json();
+
+      if (j[0] && j[0].validate_token) return j[0].validate_token;
+      else return null;
+    }
+    return null;
+  }

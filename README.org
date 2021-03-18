@@ -23,26 +23,43 @@ nvm use && cd cli ; npm i ; cd -
 #+END_SRC
 * .env
 #+BEGIN_SRC bash
-echo 'DBNAME=svelte_postgrest_app' >> .env
-echo 'APPNAME=svelte_postgrest_app' >> .env
-echo 'POSTGRESTPORT=3007' >> .env
-echo 'PGDSN=socket:/var/run/postgresql?db=svelte_postgrest_app >> .env
-echo 'POSTGREST_BASE_URI=http://localhost:3007' >> .env
-echo 'GOOGLE_CLIENT_ID=xxxxx-xxxx.apps.googleusercontent.com' >> .env
-echo 'FACEBOOK_APP_ID=123412341234' >> .env
-#+END_SRC
+  function freeport() {
+      FROM=$1
+      TO=$2
+      HOWMANY=$3
+      comm -23 \
+	   <(seq "$FROM" "$TO" | sort) \
+	   <(ss -Htan | awk '{print $4}' | cut -d':' -f2 | sort -u) \
+	  | shuf | head -n "$HOWMANY"
+  }
 
-#+RESULTS:
+  export APPNAME=svelte_postgrest_app
+  export POSTGRESTPORT=$(freeport 3000 4000 1)
+
+  echo "DBNAME=$APPNAME" >> .env
+  echo "APPNAME=$APPNAME" >> .env
+  echo "POSTGRESTPORT="$POSTGRESTPORT >> .env
+  echo 'PGDSN=socket:/var/run/postgresql?db='$APPNAME >> .env
+  echo 'POSTGREST_BASE_URI=http://localhost:'$POSTGRESTPORT >> .env
+  echo 'GOOGLE_CLIENT_ID=xxxxx-xxxx.apps.googleusercontent.com' >> .env
+  echo 'FACEBOOK_APP_ID=123412341234' >> .env
+  echo 'EMAIL_SERVICE=gmail' >> .env
+  echo 'EMAIL_HOST=smtp.gmail.com' >> .env
+  echo 'EMAIL_PORT=587' >> .env
+  echo 'EMAIL_USER=CHANGEME@gmail.com' >> .env
+  echo 'EMAIL_PASS="EMAILPASSWORD"' >> .env
+
+#+END_SRC
 
 * database initialization
 #+BEGIN_SRC bash
 source .env
 echo 'DBNAME:'$DBNAME
-sudo -u postgres psql template1 -c 'drop database '$DBNAME
-sudo -u postgres psql template1 -c 'create database '$DBNAME
-sudo -u postgres psql template1 -c "grant all on database $DBNAME to $USER"
+sudo -u postgres psql template1 -c 'drop database "'$DBNAME'"'
+sudo -u postgres psql template1 -c 'create database "'$DBNAME'"'
+sudo -u postgres psql template1 -c 'grant all on database "'$DBNAME'" to "'$USER'"'
 psql $DBNAME -c 'create extension pgjwt cascade';
-ls sql/auth/*sql | sort | xargs -n1 psql $DBNAME -f # auth schema
+ls sql/auth/*sql | sort | xargs -n1 sh -c './psql.sh -v ON_ERROR_STOP=ON $DBNAME -f $0 || exit 255' # auth schema. process multiple files. stop on first error
 #+END_SRC
 * jwt_secret
 #+BEGIN_SRC bash
@@ -54,7 +71,7 @@ sed -i -E 's/jwt-secret=".*"/jwt-secret="'$SEC'"/g' postgrest.conf
 sed -i -E 's/db-uri=".*"/db-uri="postgres:\/\/\/'$DBNAME'"/g' postgrest.conf
 sed -i -E 's/server-port = .*/server-port = '$POSTGRESTPORT'/g' postgrest.conf
 sed -i -E 's/^name: .*/name: '$APPNAME'/g' .tmuxinator.yml
-psql $DBNAME -c "ALTER DATABASE $DBNAME SET app.jwt_secret = '$SEC'"
+psql $DBNAME -c 'ALTER DATABASE "'$DBNAME'"'" SET app.jwt_secret = '$SEC'"
 #+END_SRC
 * launch
 #+BEGIN_SRC bash

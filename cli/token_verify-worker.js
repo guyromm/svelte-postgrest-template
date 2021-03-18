@@ -61,7 +61,7 @@ async function processItem(u,{client}) {
 	    await validate(u.email,{client});	    
 	}
     }
-    else l('unknown validation type for',u);
+    else l('unknown validation type for',u,':',u.validation_info);
 }
 
 async function run(opts) {

@@ -31,9 +31,9 @@
 	 (!lastRefresh || sinceSecs>interval)) {
 	 lastRefresh = new Date();
 	 const lres = await login(null,null,'refresh');
-	 if (lres && lres.token)
+	 if (lres && lres.status==='ok' && lres.result.token)
 	 {
-	     document.cookie='auth='+lres.token;
+	     document.cookie='auth='+lres.result.token+';path=/';
 	     parseToken();
 	 }
      }
