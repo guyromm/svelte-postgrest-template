@@ -1,5 +1,5 @@
+00.sql
 basic_auth.SCHEMA.sql
-users.TABLE.sql
 pgcrypto.EXTENSION.sql
 EXTENSION.pgcrypto.COMMENT.sql
 pgjwt.EXTENSION.sql
@@ -26,6 +26,7 @@ users_pass_reset_notify.FUNCTION.sql
 validate.cv.FUNCTION.sql
 validate_token.cv.FUNCTION.sql
 verify_token.text,.text.FUNCTION.sql
+users.TABLE.sql
 users.VIEW.sql
 users.users_pkey.CONSTRAINT.sql
 users.encrypt_pass.TRIGGER.sql

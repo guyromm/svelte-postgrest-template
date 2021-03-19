@@ -6,6 +6,8 @@ mkdir -p sql/schema && \
     cd sql/schema/ && \
     (rm * ||:) && \
     csplit ../schema.sql -f '' -b '%02d' '/^\-\- Name: .*/' '{*}' && \
+    mv 00 00.sql && \
+    echo '00.sql' >> order.txt && \
     for FN in `ls *` ; do
         NF="$(egrep -o "Name: ([^;]+); Type: ([^;]+)" $FN  | sed -E 's/(Name: |Type: |; |\(|\)| )/./g' | sed -E 's/(\.+)/./g' | sed -E 's/$/.sql/' | sed -E "s/^\.//g" | sed -E 's/character\.varying([^\.]*)\./cv\./g' | sed -E 's/timestamp.with.time.zone/tstz/g')";
         #mv -n $FN $FN$NF  ;
@@ -16,6 +18,12 @@ mkdir -p sql/schema && \
         #echo "mv -n $FN $FN$NF"
     done
 [ "$(wc -l < order.txt)" -eq "$(sort -u order.txt | wc -l)" ] || (echo 'FILENAMES NOT UNIQUE!' ; exit 1)
+CONSH="$(cat order.txt | xargs cat | md5sum)"
+ORIGH="$(cat ../schema.sql | md5sum)"
+#echo "CONSH $CONSH"
+#echo "ORIGH $ORIGH"
+[ "$CONSH" == "$ORIGH" ] || (echo 'CHUNKED SCHEMA DOES NOT MATCH SOURCE!' ; exit 2)
+rm ../schema.sql
 cd -
     
 # to reconstruct a single file schema:
