@@ -48,6 +48,7 @@ nvm use && cd cli ; npm i ; cd -
   echo 'EMAIL_PORT=587' >> .env
   echo 'EMAIL_USER=CHANGEME@gmail.com' >> .env
   echo 'EMAIL_PASS="EMAILPASSWORD"' >> .env
+  echo 'SITE_BASE_URI="http://localhost:3000"' >> .env
 
 #+END_SRC
 
