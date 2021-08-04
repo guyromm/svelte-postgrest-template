@@ -1,5 +1,6 @@
 #!/usr/bin/env node
-import 'dotenv/config.js'
+import dotenv from 'dotenv'
+dotenv.config();
 import pg from 'pg'
 import commandLineArgs from 'command-line-args'
 import createSubscriber from 'pg-listen'
@@ -11,21 +12,22 @@ const CHANNELS = {pass_reset:'users_pass_reset',
 		 };
 
 const l = console.log
-const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms))
-  if (!process.env.SITE_BASE_URI) throw new Error('no SITE_BASE_URI!');
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
+if (!process.env.APP_BASE_URI) throw new Error('no APP_BASE_URI!')
 
 const subscriber = createSubscriber({ connectionString: process.env.PGDSN })
 
-const nmargs= {
-    service: process.env.EMAIL_SERVICE,
-    host: (process.env.EMAIL_HOST?process.env.EMAIL_HOST:undefined),
-    port: (process.env.EMAIL_PORT?process.env.EMAIL_PORT:undefined),
-    auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS
-    }
-};
-const smtpTransport = nodemailer.createTransport(nmargs);
+const nmargs = {
+  service: process.env.EMAIL_SERVICE,
+  host: process.env.EMAIL_HOST ? process.env.EMAIL_HOST : undefined,
+  port: process.env.EMAIL_PORT ? process.env.EMAIL_PORT : undefined,
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS,
+  },
+}
+const smtpTransport = nodemailer.createTransport(nmargs)
+//l('transport',nmargs); // process.exit();
 
 // this defines additional tables (resources) and their columns 
 // which can be shared between users
@@ -33,32 +35,6 @@ const colTrans={
 		//SRCTBL:'fkey_id',
 	       };
 
-async function processInvite(u,{client,payload}) {
-  let r = payload;
-  for (let [mtyp,mcol] of Object.entries(colTrans))
-    if (r[mcol]!==undefined)
-  {
-    r.typ=mtyp;
-  }
-  if (!r.typ) { l(r) ; l('tried mcols',colTrans); throw new Error('processInvite: unknown typ'); }
-  const col = colTrans[r.typ];
-  const id = r[col];
-  l('processInvite',r.typ,col,r);
-  let invite_link = `${process.env.SITE_BASE_URI}/${r.typ}/${id}`;
-  if (r.validation_info && r.validation_info.token && !r.validated)  //&& !r.validation_info.email_sent)
-    invite_link+='?validation_token='+encodeURIComponent(r.validation_info.token);
-  l('about to send email to',r.user_id,'with invite link',invite_link);
-  const info = await smtpTransport.sendMail({from:process.env.EMAIL_USER,
-					     to:r.user_id,
-					     subject:`${process.env.APPNAME} - invitation to collaborate on ${r.typ} ${id}`,
-					     html:`step inside <a href="${invite_link}">${r.typ} ${r.id}</a>`
-					    });
-  const updqry = `update ${r.typ}_perms set status='invited' where ${col}=$1 and user_id=$2`;
-  const updargs = [id,r.user_id];
-  await client.query(updqry,updargs);
-  l(updqry,updargs);
-  l('processInvite done',r.typ,col,id); 
-}
 async function processWelcome(user,{client}) {
     l('about to welcome',user.email); // return;
     const info = await smtpTransport.sendMail({from:process.env.EMAIL_USER,
@@ -77,17 +53,21 @@ concat('"',to_char (now()::timestamp at time zone 'UTC', 'YYYY-MM-DDTHH24:MI:SSZ
     l('welcomed',user.email);
 }
 
+function genRandToken(length) {
+    var result           = '';
+    var characters       = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    var charactersLength = characters.length;
+    for ( var i = 0; i < length; i++ ) {
+      result += characters.charAt(Math.floor(Math.random() * 
+ charactersLength));
+   }
+   return result;
+}
+
 async function processInserted(user,{client}) {
-  l('about to send validation to',user.email); // return;
-  await client.query(`update basic_auth.users set 
-validation_info=
-jsonb_set(jsonb_set(
-coalesce(validation_info,'{}'::jsonb),
-'{token}'::text[],
-concat('"',md5(random()::text),'"')::jsonb
-),'{email_sent}','true'::jsonb) where email=$1`,[user.email]);
-  let token = (await client.query("select validation_info->>'token' token from basic_auth.users where email=$1",[user.email])).rows[0].token;
-  let validate_link = `${process.env.SITE_BASE_URI}/auth/validate?token=${encodeURIComponent(token)}`;
+    const token = genRandToken(32);
+    l('about to send validation to',user.email);
+    let validate_link = `${process.env.APP_BASE_URI}/auth/validate?token=${encodeURIComponent(token)}`;
   let subject;
   subject=`${process.env.APPNAME} validation`;
   const info = await smtpTransport.sendMail({from:process.env.EMAIL_USER,
@@ -95,6 +75,14 @@ concat('"',md5(random()::text),'"')::jsonb
     					     subject,
     					     html: `<h4>please follow the following link in order to validate your email</h4>
 <p><a href="${validate_link}">validate</a></p>`});
+  await client.query(`update basic_auth.users set 
+validation_info=
+jsonb_set(jsonb_set(
+coalesce(validation_info,'{}'::jsonb),
+'{token}'::text[],
+concat('"${token}"')::jsonb
+),'{email_sent}','true'::jsonb) where email=$1`,[user.email]);
+    
 
   l('welcomed',user.email);
 }
@@ -200,28 +188,6 @@ async function pass_reset_run (opts) {
     l('pass_reset_run() out.')
 }
 
-async function share_run(opts,tbl) {
-  const client = opts.client;
-  const ct = colTrans[tbl];
-  if (!ct) throw new Error('coltrans wtf '+tbl);
-  let res;
-  if (opts.user)
-    res = await client.query(`select * from ${tbl}_perms sdp left outer join ${tbl} sd on sdp.${ct}=sd.id left outer join basic_auth.users u on u.email=sdp.user_id where sdp.user_id=$1 where sdp.status=$2`,[opts.user,'pending'])
-  else
-  {
-    let qry = `select * from ${tbl}_perms sdp left outer join ${tbl} sd on sdp.${ct}=sd.id left outer join basic_auth.users u on u.email=sdp.user_id where sdp.status=$1`;
-    l('share run',tbl,qry);
-    res = await client.query(qry,['pending'])
-  }
-  
-  for (const r of res.rows) {
-    if (opts.notify) {
-      await subscriber.notify(tbl+'_perms_insert',r);
-    }
-    else
-      await processInvite(r,{client,payload:r});
-  }
-}
 
 function validateWelcomeRow(row) {
   const rt = (row.validated && (!row.validation_info || !row.validation_info.welcome_sent_at));
@@ -284,8 +250,11 @@ async function listen({chan,validateRow,processItem,run_func},opts) {
   })
   //scon(opts)
   l('connected. listening.')
-  await subscriber.listenTo(chan);
-  process.on('exit', () => { sclose(); client.end(); } )
+  await subscriber.listenTo(chan)
+  process.on('exit', () => {
+    sclose()
+    client.end()
+  })
   l('listen setup complete. running notifies for older stuff.')
 
   run_func({...opts, notify: true, noConnect: true })

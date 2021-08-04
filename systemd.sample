@@ -1,0 +1,16 @@
+[Unit]
+Description=AppName
+DefaultDependencies=no
+After=postgresql.service
+
+[Service]
+Type=simple
+WorkingDirectory=/path/to/app
+User=APPUSER
+Group=APPGROUP
+ExecStart=/path/to/startup/script/tmux.sh
+TimeoutStartSec=0
+RemainAfterExit=yes
+
+[Install]
+WantedBy=default.target

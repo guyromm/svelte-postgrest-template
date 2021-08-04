@@ -17,65 +17,50 @@ npx degit https://github.com/guyromm/svelte-postgrest-template svelte-postgrest-
 #+END_SRC
 * package.json dependencies
 #+BEGIN_SRC bash
-nvm use && cd sapper-app ; npm i ; cd -
-nvm use && cd common ; npm i ; cd -
-nvm use && cd cli ; npm i ; cd -
+    nvm use && cd app ; npm i ; cd -
+    nvm use && cd common ; npm i ; cd -
+    nvm use && cd cli ; npm i ; cd -
+    nvm use && cd server ; npm i ; cd -
 #+END_SRC
+
 * .env
+  use envs/local.tpl to create an envs/local .env shell file, and then
+  expand/eval it using ./setenv.sh
 #+BEGIN_SRC bash
-  function freeport() {
-      FROM=$1
-      TO=$2
-      HOWMANY=$3
-      comm -23 \
-	   <(seq "$FROM" "$TO" | sort) \
-	   <(ss -Htan | awk '{print $4}' | cut -d':' -f2 | sort -u) \
-	  | shuf | head -n "$HOWMANY"
-  }
-
+    function freeport() {
+	FROM=$1
+	TO=$2
+	HOWMANY=$3
+	comm -23 \
+	     <(seq "$FROM" "$TO" | sort) \
+	     <(ss -Htan | awk '{print $4}' | cut -d':' -f2 | sort -u) \
+	    | shuf | head -n "$HOWMANY"
+    }
   export APPNAME=svelte_postgrest_app
-  export POSTGRESTPORT=$(freeport 3000 4000 1)
+  export DBNAME=$APPNAME
+  export APPPORT=$(freeport 3000 4000 1)
+  export POSTGRESTPORT=$[APPPORT+1]
+  export SERVERPORT=$[APPPORT+2]
+  export JWTSECRET=$(head /dev/urandom | tr -dc A-F0-9 | head -c 64 ; echo '')
 
-  echo "DBNAME=$APPNAME" >> .env
-  echo "APPNAME=$APPNAME" >> .env
-  echo "POSTGRESTPORT="$POSTGRESTPORT >> .env
-  echo 'PGDSN=socket:/var/run/postgresql?db='$APPNAME >> .env
-  echo 'POSTGREST_BASE_URI=http://localhost:'$POSTGRESTPORT >> .env
-  echo 'GOOGLE_CLIENT_ID=xxxxx-xxxx.apps.googleusercontent.com' >> .env
-  echo 'FACEBOOK_APP_ID=123412341234' >> .env
-  echo 'EMAIL_SERVICE=gmail' >> .env
-  echo 'EMAIL_HOST=smtp.gmail.com' >> .env
-  echo 'EMAIL_PORT=587' >> .env
-  echo 'EMAIL_USER=CHANGEME@gmail.com' >> .env
-  echo 'EMAIL_PASS="EMAILPASSWORD"' >> .env
-  echo 'SITE_BASE_URI="http://localhost:3000"' >> .env
-
+  cp envs/local.tpl envs/local
+  sed -i -E "s/APPPORTREPLACE/$APPPORT/g" envs/local
+  sed -i -E "s/SERVERPORTREPLACE/$SERVERPORT/g" envs/local
+  sed -i -E "s/POSTGRESTPORTREPLACE/$POSTGRESTPORT/g" envs/local
+  sed -i -E "s/DBNAMEREPLACE/$DBNAME/g" envs/local
+  sed -i -E "s/JWTSECRETREPLACE/$JWTSECRET/g" envs/local
+  ./setenv.sh local
 #+END_SRC
 
 * database initialization
 #+BEGIN_SRC bash
-source .env
-echo 'DBNAME:'$DBNAME
-sudo -u postgres psql template1 -c 'drop database "'$DBNAME'"'
-sudo -u postgres psql template1 -c 'create database "'$DBNAME'"'
-sudo -u postgres psql template1 -c 'grant all on database "'$DBNAME'" to "'$USER'"'
-psql $DBNAME -c 'create extension pgjwt cascade';
-ls sql/auth/*sql | sort | xargs -n1 sh -c './psql.sh -v ON_ERROR_STOP=ON $DBNAME -f $0 || exit 255' # auth schema. process multiple files. stop on first error
+  source .env
+  echo 'DBNAME:'$DBNAME
+  ./db_init.sh
 #+END_SRC
-* jwt_secret
-#+BEGIN_SRC bash
-source .env
-SEC=$(head /dev/urandom | tr -dc A-F0-9 | head -c 64 ; echo '')
-echo 'DBNAME:'$DBNAME
-echo 'SEC:'$SEC
-sed -i -E 's/jwt-secret=".*"/jwt-secret="'$SEC'"/g' postgrest.conf
-sed -i -E 's/db-uri=".*"/db-uri="postgres:\/\/\/'$DBNAME'"/g' postgrest.conf
-sed -i -E 's/server-port = .*/server-port = '$POSTGRESTPORT'/g' postgrest.conf
-sed -i -E 's/^name: .*/name: '$APPNAME'/g' .tmuxinator.yml
-psql $DBNAME -c 'ALTER DATABASE "'$DBNAME'"'" SET app.jwt_secret = '$SEC'"
-#+END_SRC
+
 * launch
 #+BEGIN_SRC bash
-tmuxinator local
+./tmux.sh
 #+END_SRC
 

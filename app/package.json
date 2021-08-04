@@ -3,43 +3,30 @@
   "description": "TODO",
   "version": "0.0.1",
   "scripts": {
-    "dev": "sapper dev",
-    "build": "sapper build --legacy",
-    "export": "sapper export --legacy",
-    "start": "node __sapper__/build",
-    "cy:run": "cypress run",
-    "cy:open": "cypress open",
-    "test": "run-p --race dev cy:run"
-  },
-  "dependencies": {
-    "@beyonk/svelte-social-auth": "^2.0.1",
-    "compression": "^1.7.1",
-    "dotenv": "^8.2.0",
-    "google-auth-library": "^6.0.0",
-    "js-cookies": "^1.0.4",
-    "jwt-decode": "^2.2.0",
-    "lorem-ipsum": "^2.0.3",
-    "polka": "next",
-    "qs": "^6.9.3",
-    "sapper-environment": "^1.0.1",
-    "serialize-javascript": "^3.1.0",
-    "sirv": "^0.4.0"
+    "dev": "svelte-kit dev",
+    "build": "svelte-kit build",
+    "preview": "svelte-kit preview",
+    "lint": "prettier --check --plugin-search-dir=. . && eslint --ignore-path .gitignore .",
+    "format": "prettier --write --plugin-search-dir=. ."
   },
   "devDependencies": {
-    "npm-run-all": "^4.1.5",
-    "sapper": "^0.27.0",
-    "svelte": "^3.0.0",
-    "@babel/core": "^7.0.0",
-    "@babel/plugin-syntax-dynamic-import": "^7.0.0",
-    "@babel/plugin-transform-runtime": "^7.0.0",
-    "@babel/preset-env": "^7.0.0",
-    "@babel/runtime": "^7.0.0",
-    "@rollup/plugin-commonjs": "^11.0.0",
-    "@rollup/plugin-node-resolve": "^7.0.0",
-    "@rollup/plugin-replace": "^2.2.0",
-    "rollup": "^1.20.0",
-    "rollup-plugin-babel": "^4.0.2",
-    "rollup-plugin-svelte": "^5.0.1",
-    "rollup-plugin-terser": "^4.0.4"
+    "@sveltejs/adapter-node": "^1.0.0-next.24",
+    "@sveltejs/adapter-static": "^1.0.0-next.13",
+    "@sveltejs/kit": "next",
+    "eslint": "^7.22.0",
+    "eslint-config-prettier": "^8.1.0",
+    "eslint-plugin-svelte3": "^3.2.0",
+    "prettier": "~2.2.1",
+    "prettier-plugin-svelte": "^2.2.0",
+    "svelte": "^3.34.0"
+  },
+  "type": "module",
+  "dependencies": {
+    "@beyonk/svelte-social-auth": "^2.1.1",
+    "jwt-decode": "^3.1.2",
+    "lorem-ipsum": "^2.0.3",
+    "qs": "^6.10.1",
+    "rollup-plugin-babel": "^4.4.0",
+    "rollup-plugin-svelte": "^7.1.0"
   }
 }

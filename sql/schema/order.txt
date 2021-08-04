@@ -1,4 +1,3 @@
-00.sql
 basic_auth.SCHEMA.sql
 pgcrypto.EXTENSION.sql
 EXTENSION.pgcrypto.COMMENT.sql
@@ -18,16 +17,20 @@ refresh.FUNCTION.sql
 register.text,.text.FUNCTION.sql
 register.text,.text,.text.FUNCTION.sql
 role.cv.cv.FUNCTION.sql
+users.TABLE.sql
+users.VIEW.sql
+set_user_role.text,.text.FUNCTION.sql
 unvalidate.cv.FUNCTION.sql
+user_approved.text,.boolean.FUNCTION.sql
 user_delete.cv.FUNCTION.sql
 user_insert.cv.FUNCTION.sql
+user_validated.text,.boolean.FUNCTION.sql
 users_notify_trigger.FUNCTION.sql
 users_pass_reset_notify.FUNCTION.sql
 validate.cv.FUNCTION.sql
 validate_token.cv.FUNCTION.sql
+validation_reset.FUNCTION.sql
 verify_token.text,.text.FUNCTION.sql
-users.TABLE.sql
-users.VIEW.sql
 users.users_pkey.CONSTRAINT.sql
 users.encrypt_pass.TRIGGER.sql
 users.ensure_user_role_exists.TRIGGER.sql
@@ -38,3 +41,5 @@ FUNCTION.user_delete.email.cv.ACL.sql
 FUNCTION.user_insert.email.cv.ACL.sql
 FUNCTION.validate.email.cv.ACL.sql
 FUNCTION.verify_token.token.text,.algorithm.text.ACL.sql
+settings.TABLE.sql
+settings.table_name_pk.CONSTRAINT.sql

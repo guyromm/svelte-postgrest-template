@@ -2,11 +2,13 @@
 --
 
 CREATE VIEW public.users AS
- SELECT u.email,
+ SELECT u.ts,
+    u.email,
     u.role,
     u.validated,
     u.pass_reset_info,
-    u.validation_info
+    u.validation_info,
+    u.approved
    FROM basic_auth.users u;
 
 

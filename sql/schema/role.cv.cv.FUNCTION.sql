@@ -8,4 +8,8 @@ update basic_auth.users set role=newrole where email=role.email and email<>curre
 $$;
 
 
+SET default_tablespace = '';
+
+SET default_table_access_method = heap;
+
 --

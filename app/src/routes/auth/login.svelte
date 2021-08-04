@@ -1,4 +1,6 @@
 <script>
-import Auth from '../../components/Auth.svelte';
+  import Auth from '../../components/Auth.svelte'
+
 </script>
-<Auth mode='login'/>
+
+<Auth mode="login" />

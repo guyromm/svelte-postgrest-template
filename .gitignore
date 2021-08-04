@@ -22,3 +22,6 @@ yarn-error.log
 .npm/
 .ssh/
 .bash_history
+.idea/
+engine/
+.env.sh

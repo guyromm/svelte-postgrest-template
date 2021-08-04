@@ -1,0 +1,13 @@
+{
+  "name": "postgrest-on-vercel",
+  "version": "1.0.0",
+  "main": "index.js",
+  "dependencies": {
+    "delay": "^4.4.0",
+    "dotenv": "^10.0.0",
+    "get-port": "^5.1.1",
+    "micro": "^9.3.4",
+    "node-fetch": "^2.6.1",
+    "postgrest": "^1.0.2"
+  }
+}

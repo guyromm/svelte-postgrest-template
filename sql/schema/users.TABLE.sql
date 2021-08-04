@@ -9,6 +9,7 @@ CREATE TABLE basic_auth.users (
     validation_info jsonb,
     pass_reset_info jsonb,
     ts timestamp with time zone DEFAULT now(),
+    approved timestamp with time zone,
     CONSTRAINT users_email_check CHECK ((email ~* '^.+@.+\..+$'::text)),
     CONSTRAINT users_pass_check CHECK ((length(pass) < 512)),
     CONSTRAINT users_role_check CHECK ((length((role)::text) < 512))

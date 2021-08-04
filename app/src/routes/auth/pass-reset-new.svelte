@@ -1,9 +1,9 @@
 <script>
-  import { stores } from '@sapper/app'
 
   import PassReset from '../../components/PassReset.svelte'
 
-  const { page } = stores()
+  import { page } from '$app/stores';
+
 </script>
 
-<PassReset {page} mode='new-pass' />
+<PassReset {page} mode="new-pass" />

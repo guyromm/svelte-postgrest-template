@@ -1,6 +1,0 @@
-name: svelte_postgrest_app
-windows:
-  - postgrest: postgrest postgrest.conf
-  - validation: nvm use && cli/email_worker.js -l
-  - sapper: nvm use && cd sapper-app ; npm run dev
-    

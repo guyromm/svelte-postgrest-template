@@ -1,71 +1,98 @@
 <script>
- import { goto } from '@sapper/app';
- import {Switcher,Box} from './layout';
- import {parseToken,authDataStore} from '../lib/stores';
- import {login} from '../../../common/postgrest.js';
- export let segment;
+  import { goto } from '$app/navigation'
+  import { parseToken, authDataStore } from '../lib/stores'
+  import { login } from '../../../common/postgrest.js'
+  import { page } from '$app/stores';
+
  const pagenames = ['grid','stack','box','bracket','cluster','sidebar','switcher','cover','frame','reel','imposter','auth'];
- const navpages = {};
- const l = console.log;
- for (const page of pagenames)
-     navpages[page]={};
- navpages.grid={url:'/'};
- let authData;
- const updauth = (value) => {
-     authData=value;
-     navpages.auth={label:'auth'+
-		   (value?` (${value.email})`:'')};
- }
- const unsubscribe = authDataStore.subscribe(updauth);
- parseToken();
- let lastRefresh;
- const tokenRefresh = setInterval(async() => {
-     let interval;
-     if (authData && !authData.validated) interval=1; //unvalidated - refresh every second
-     else if (authData && authData.validated) interval=300; // validated - refresh every 5 min
-     else if (!authData) interval=null; // do not refresh - we do not have a token.
-     else throw new Error('unknown situation refresh-wise');
-     let sinceSecs = (new Date() - lastRefresh)/1000;
-     //l('sinceSecs=',sinceSecs,'interval=',interval);
-     if ((interval && !authData.is_expired) &&
-	 (!lastRefresh || sinceSecs>interval)) {
-	 lastRefresh = new Date();
-	 const lres = await login(null,null,'refresh');
-	 if (lres && lres.status==='ok' && lres.result.token)
-	 {
-	     document.cookie='auth='+lres.result.token+';path=/';
-	     parseToken();
-	 }
-     }
-     //else { l('not refreshing, interval=',interval,'sinceSecs',sinceSecs); }
- },1000);
+  const pageHumanName = {
+    source_data: 'Data',
+    output_cfg: 'Configs',
+    jobs: 'Jobs',
+    tutorial: 'Tutorial',
+    auth: 'Account',
+  }
+  const adminPages = ['users', 'settings']
+  const navpages = {}
+  const l = console.log
 
-
- let cursegment;
- $: {
-     cursegment = (segment || 'grid');
+  let authData
+  const updauth = (value) => {
+    authData = value
+    for (const page of pagenames) {
+      navpages[page] = {
+        label:
+          page === 'auth'
+            ? pageHumanName.auth +
+              (authData ? ` <span>(${authData.email})</span>` : '')
+            : pageHumanName[page],
+        url:
+          !authData || !authData.token
+            ? 'auth/login?redir=' + encodeURIComponent(`/${page}`)
+            : !authData.approved
+            ? 'auth/unapproved-user?redir=' + encodeURIComponent(`/${page}`)
+            : !authData.validated
+            ? 'auth/unvalidated-user?redir=' + encodeURIComponent(`/${page}`)
+            : page,
+      }
     }
- const handleKey = (e) => {
-     let pos = pagenames.indexOf(cursegment);
-     let idx=0;
-     if (e.key==='ArrowRight')
-	 idx=pos+1;
-     else if (e.key==='ArrowLeft')
-	 idx=pos-1;
-     else if (e.key==='ArrowUp')
-	 idx=0;
-     else if (e.key==='ArrowDown')
-	 idx=pagenames.length-1;
-     else
-	 idx=pos;
-     if (idx>=pagenames.length) idx=0;
-     else if (idx<0) idx=pagenames.length-1;
-     let nsegment=pagenames[idx];     
-     //l(e,'pos',pos,'keyup',e.key,idx,cursegment,'=>',nsegment,nsegment===cursegment);
-     if (nsegment!==cursegment) goto(navpages[nsegment].url?
-				     navpages[nsegment].url:
-				     nsegment);
-     }
+  }
+
+  const unsubscribe = authDataStore.subscribe(updauth)
+
+  parseToken()
+
+  let lastRefresh
+  const tokenRefresh = setInterval(async () => {
+    let interval
+    if (authData && (!authData.validated || !authData.approved)) interval = 1
+    //unvalidated - refresh every second
+    else if (authData && authData.validated) interval = 300
+    // validated - refresh every 5 min
+    else if (!authData) interval = null
+    // do not refresh - we do not have a token.
+    else throw new Error('unknown situation refresh-wise')
+    let sinceSecs = (new Date() - lastRefresh) / 1000
+    //l('sinceSecs=',sinceSecs,'interval=',interval);
+    if (
+      interval &&
+      !authData.is_expired &&
+      (!lastRefresh || sinceSecs > interval)
+    ) {
+      lastRefresh = new Date()
+      const lres = await login(null, null, 'refresh')
+      if (lres && lres.status === 'ok' && lres.result.token) {
+        document.cookie = 'auth=' + lres.result.token + ';path=/'
+        parseToken()
+      }
+    }
+    //else { l('not refreshing, interval=',interval,'sinceSecs',sinceSecs); }
+  }, 1000)
+
+  let cursegment
+  let selected
+  $: {
+    cursegment = $page.path.slice(1)
+    selected = cursegment
+  }
+  const handleKey = (e) => {
+    let pos = pagenames.indexOf(cursegment)
+    let idx = 0
+    if (e.key === 'ArrowRight') idx = pos + 1
+    else if (e.key === 'ArrowLeft') idx = pos - 1
+    else if (e.key === 'ArrowUp') idx = 0
+    else if (e.key === 'ArrowDown') idx = pagenames.length - 1
+    else idx = pos
+    if (idx >= pagenames.length) idx = 0
+    else if (idx < 0) idx = pagenames.length - 1
+    let nsegment = pagenames[idx]
+    //l(e,'pos',pos,'keyup',e.key,idx,cursegment,'=>',nsegment,nsegment===cursegment);
+    if (nsegment !== cursegment)
+      goto(navpages[nsegment].url ? navpages[nsegment].url : nsegment)
+  }
+
+  $: isAdmin = !!(authData && authData.role === 'admin')
+
 </script>
 <!--<svelte:window on:keyup={handleKey}/>-->
 <style>

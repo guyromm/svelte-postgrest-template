@@ -1,0 +1,25 @@
+{
+  "name": "server",
+  "type": "module",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node index.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "archiver": "^5.3.0",
+    "busboy": "^0.3.1",
+    "compression": "^1.7.4",
+    "dotenv": "^10.0.0",
+    "http-proxy-middleware": "^2.0.0",
+    "nodemon": "^2.0.7",
+    "pg": "^8.6.0",
+    "polka": "^0.5.2",
+    "sirv": "^1.0.11",
+    "socket.io": "^4.1.2"
+  }
+}
