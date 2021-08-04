@@ -17,10 +17,7 @@ npx degit https://github.com/guyromm/svelte-postgrest-template svelte-postgrest-
 #+END_SRC
 * package.json dependencies
 #+BEGIN_SRC bash
-    nvm use && cd app ; npm i ; cd -
-    nvm use && cd common ; npm i ; cd -
-    nvm use && cd cli ; npm i ; cd -
-    nvm use && cd server ; npm i ; cd -
+nvm use ; ./npm-init.sh
 #+END_SRC
 
 * .env
