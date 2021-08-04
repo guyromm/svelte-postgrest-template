@@ -1,5 +1,5 @@
 * what & why?
-- [[https://svelte.dev/][svelte]] is the hot new FE dev stuff. do [[https://svelte.dev/tutorial/basics][the tutorial]] to get hooked. [[https://sapper.svelte.dev/][sapper]] - its equivalent of SSR
+- [[https://svelte.dev/][svelte]] is the hot new FE dev stuff. do [[https://svelte.dev/tutorial/basics][the tutorial]] to get hooked. [[https://kit.svelte.dev/][SvelteKit]] - its equivalent of SSR
   framework, not unlike next.js
 - [[http://postgrest.org/][postgrest]] is a really nice backend to quickly prototype apps by
   definining data & permissions, without having to write backend.

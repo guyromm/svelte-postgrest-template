@@ -24,7 +24,6 @@
 
   export let mode = undefined
 
-  //dynamically imported as per https://sapper.svelte.dev/docs#Making_a_component_SSR_compatible :
   let GoogleAuth
   let FacebookAuth
 

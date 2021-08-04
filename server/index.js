@@ -67,7 +67,6 @@ polka({ server }) // You can also use Express
     Cors(cors),
     compression({ threshold: 0 }),
     sirv('../app/static', { dev })
-    //sapper.middleware()
   )
   //.use('/app',proxy) // proxy is disabled in favor of standalone servers
   .listen(process.env.SERVER_PORT, (err) => {
