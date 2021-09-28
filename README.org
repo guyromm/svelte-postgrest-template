@@ -32,7 +32,7 @@ nvm use ; ./npm-init.sh
 	     <(ss -Htan | awk '{print $4}' | cut -d':' -f2 | sort -u) \
 	    | shuf | head -n "$HOWMANY"
     }
-  export APPNAME=svelte_postgrest_app
+  export APPNAME=$(basename $(pwd))
   export DBNAME=$APPNAME
   export APPPORT=$(freeport 3000 4000 1)
   export POSTGRESTPORT=$[APPPORT+1]
