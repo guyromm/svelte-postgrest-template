@@ -1,7 +1,7 @@
 #!/bin/bash
-session=`whoami`
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 source $DIR/.env
+session="$APPNAME"
 
 function ti() {
     #tmux -d "$@" -s $session
