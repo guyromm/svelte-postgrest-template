@@ -76,9 +76,8 @@ polka({ server }) // You can also use Express
 // helper func to figure out if client is authorized for
 // action/resource access
 async function isAuthorized(o, user) {
-    let rt = true; // FIXME!
-    l('isAuthorized',o,user,'=>',rt);
-    return rt
+  let rt = false
+  return rt
 }
 
 async function pgconn() {

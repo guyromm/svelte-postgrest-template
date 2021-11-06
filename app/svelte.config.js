@@ -16,7 +16,8 @@ const config = {
 	    			pages: 'build',
 			assets: 'build',
 			fallback: null
-	  })*/
+			})*/
+	    vite:{server:{hmr:{protocol:process.env.HMR_PROTO||'ws',port:process.env.HMR_PORT||process.env.APP_PORT}}}
 	}
 };
 

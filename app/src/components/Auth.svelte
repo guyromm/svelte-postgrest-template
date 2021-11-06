@@ -88,6 +88,10 @@
   $: {
     email = email.trim().toLowerCase()
   }
+  $: {
+    if (authData && !authData.validated && !authData.is_expired && mode!='validate')
+      mode='unvalidated';
+  }
   $: if ((mode === 'unvalidated' && authData.validated) || (mode === 'unapproved' && authData.approved)) {
     goto('/')
   }

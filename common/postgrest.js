@@ -325,7 +325,7 @@ export async function insert(path, obj, errok, headersOverride = {}) {
 	furl = DB + '/' + path;
   let res = await fetch(furl, {
     method: 'POST',
-    headers: h,
+    headers: {'Prefer':'return=representation',...h},
     body: JSON.stringify(obj),
   })
   //l('insert returned',res);
