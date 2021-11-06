@@ -3,7 +3,9 @@
   import { parseToken, authDataStore } from '../lib/stores'
   import { login } from '../../../common/postgrest.js'
   import { page } from '$app/stores';
-
+  import Switcher from '../components/layout/Switcher.svelte';
+  import Box from '../components/layout/Box.svelte';
+  
  const pagenames = ['grid','stack','box','bracket','cluster','sidebar','switcher','cover','frame','reel','imposter','auth'];
   const pageHumanName = {
     source_data: 'Data',
@@ -103,9 +105,9 @@
     <Switcher>
 	{#each Object.entries(navpages) as [name,opts]}
 	    <Box><a
-		     aria-current={((segment!==undefined && segment===opts.url) ||
+		     aria-current={((cursegment!==undefined && cursegment===opts.url) ||
 				cursegment===name ||
-				(segment===undefined && opts.url==='.'))?"page":undefined}
+				(cursegment===undefined && opts.url==='.'))?"page":undefined}
 		   href={opts.url?opts.url:name}
 		   {...opts.attrs}
 		><span>{opts.label || name}</span></a></Box>
