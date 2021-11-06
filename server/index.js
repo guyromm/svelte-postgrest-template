@@ -73,80 +73,88 @@ polka({ server }) // You can also use Express
     if (err) console.log('error', err)
   })
 
+// helper func to figure out if client is authorized for
+// action/resource access
 async function isAuthorized(o, user) {
-  let rt = false
-  // helper func to figure out if client is authorized for action/resource access
-  return rt
+    let rt = true; // FIXME!
+    l('isAuthorized',o,user,'=>',rt);
+    return rt
 }
 
 async function pgconn() {
-  if (!isConnected) {
-    l('pgconn connecting.')
-    isConnected = true
-    await client.connect()
+    if (!isConnected) {
+	l('pgconn connecting.')
+	isConnected = true
+	await client.connect()
 
-    for (let listen of listens)
-      var query = await client.query(`LISTEN ${listen}`)
+	for (let listen of listens)
+	{
+	    l('listening on',listen);
+	    var query = await client.query(`LISTEN ${listen}`)
+	}
 
-    client.on('notification', function (title) {
-      l('NOTIFICATION', title)
-      let o = JSON.parse(title.payload)
-      for (let [sockid, socket] of Object.entries(sockets)) {
-        //l('working socket',sockid,'for possible authorization to notify',o.owner_id,'regarding',o.id);
-        if (isAuthorized(o, socketUsers[socket.id])) {
-          l(
-            'notification',
-            title.channel,
-            title.payload,
-            '=>',
-            socketUsers[socket.id]
-          )
-          socket.emit('update', { message: title })
-        }
-      }
-    })
-  }
-  //else l('pgconn ALREADY CONNECTED');
+	client.on('notification', async function (title) {
+	    l('NOTIFICATION', title)
+	    let o = JSON.parse(title.payload)
+	    for (let [sockid, socket] of Object.entries(sockets)) {
+		//l('working socket',sockid,'for possible authorization to notify',o.owner_id,'regarding',o.id);
+		const ia = await isAuthorized(o, socketUsers[socket.id]);
+		l('ia=',ia,!!ia);
+		if (ia) {
+		    l(
+			'notification',
+			title.channel,
+			title.payload,
+			'=>',
+			socketUsers[socket.id]
+		    )
+		    socket.emit('update', { message: title })
+		}
+	    }
+	})
+    }
+    //else l('pgconn ALREADY CONNECTED');
 }
 const io = new Server(server, { cors })
 
 // pg channels to listen on for events to pass on to connected clients
 const listens = [
+ // INSERT LISTENED CHANNELS LIST HERE
 ]
 let sockets = {}
 let socketUsers = {}
 io.on('connection', async function (socket) {
-  //const token = Object.keys(socket.handshake.query)[0];
-  let cookies = Object.fromEntries(
-    socket.handshake.headers.cookie
-      ? socket.handshake.headers.cookie
-          .split('; ')
-          .map((x) => (x ? x.split('=') : [null, null]))
-      : []
-  )
-  const token =
-    cookies.auth || (socket.handshake.auth && socket.handshake.auth.token)
-  //l('socket',socket.id,'connected with token',token);
-  if (!token || token.length < 10) return socket.disconnect()
-  //console.log('connected with token',token)
-  pgconn()
-  try {
-    let vres = await client.query('select (verify_token($1)).*', [token])
-    //l('vres',vres);
-    let { header, payload, valid } = vres.rows[0]
-    //l('validate returned',header,payload,valid);
-    if (valid !== true) throw new Error('invalid token')
-    let user = payload.email
-    l('connected socketio user', user)
-    socket.on('disconnect', () => {
-      l('socket', socket.id, 'disconnecting')
-      delete sockets[socket.id]
-      delete socketUsers[socket.id]
-    })
-    sockets[socket.id] = socket
-    socketUsers[socket.id] = user
-  } catch (e) {
-    l('error authenticating.', token, ':', e)
-    socket.disconnect()
-  }
+    //const token = Object.keys(socket.handshake.query)[0];
+    let cookies = Object.fromEntries(
+	socket.handshake.headers.cookie
+	    ? socket.handshake.headers.cookie
+            .split('; ')
+            .map((x) => (x ? x.split('=') : [null, null]))
+	    : []
+    )
+    const token =
+	  cookies.auth || (socket.handshake.auth && socket.handshake.auth.token)
+    //l('socket',socket.id,'connected with token',token);
+    if (!token || token.length < 10) return socket.disconnect()
+    //console.log('connected with token',token)
+    pgconn()
+    try {
+	let vres = await client.query('select (verify_token($1)).*', [token])
+	//l('vres',vres);
+	let { header, payload, valid } = vres.rows[0]
+	//l('validate returned',header,payload,valid);
+	if (valid !== true) throw new Error('invalid token')
+	let user = payload.email
+	l('connected socketio user', user)
+	socket.on('disconnect', () => {
+	    l('socket', socket.id, 'disconnecting')
+	    delete sockets[socket.id]
+	    delete socketUsers[socket.id]
+	})
+	sockets[socket.id] = socket
+	socketUsers[socket.id] = user
+    } catch (e) {
+	l('error authenticating.', token, ':', e)
+	socket.disconnect()
+    }
 })
