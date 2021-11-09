@@ -26,7 +26,7 @@
         label:
           page === 'auth'
             ? pageHumanName.auth +
-              (authData ? ` <span>(${authData.email})</span>` : '')
+              (authData ? ` (${authData.email})` : '')
             : pageHumanName[page],
         url:
           !authData || !authData.token
@@ -35,7 +35,7 @@
             ? 'auth/unapproved-user?redir=' + encodeURIComponent(`/${page}`)
             : !authData.validated
             ? 'auth/unvalidated-user?redir=' + encodeURIComponent(`/${page}`)
-            : page,
+            : '/'+page,
       }
     }
   }
