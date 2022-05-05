@@ -7,10 +7,10 @@ const l = console.log;
 const config = {
 	kit: {
 		// hydrate the <div id="svelte"> element in src/app.html
-	  target: '#svelte',
+	  /*target: '#svelte',*/
 	    //paths: { base: "/" },
 	  adapter: adapter(),
-	  ssr:false,
+	  /*ssr:false,*/
 	  /*paths: {base:''},
 	  adapter: adapter({
 	    			pages: 'build',

@@ -5,3 +5,6 @@ GRANT ALL ON FUNCTION public.verify_token(token text, algorithm text) TO admin;
 
 
 --
+-- PostgreSQL database dump complete
+--
+

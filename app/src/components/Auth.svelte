@@ -28,10 +28,10 @@
   let FacebookAuth
 
   /* email token validation vars */
-  let token = $page.query.get('token')
+  let token = $page.url.searchParams.get('token')
   let tokenValid = false
   let thankYou = false
-  let redir = $page.query.get('redir')
+  let redir = $page.url.searchParams.get('redir')
   let authToken
   let validationProcess = false
 
@@ -76,7 +76,7 @@
     if (redir && tokenValid) goto(redir)
     validationProcess = false
   })
-  let email = $page.query.get('email') || ''
+  let email = $page.url.searchParams.get('email') || ''
   let pass = ''
   let confirm_pass = ''
   let error

@@ -31,7 +31,9 @@ validate.cv.FUNCTION.sql
 validate_token.cv.FUNCTION.sql
 validation_reset.FUNCTION.sql
 verify_token.text,.text.FUNCTION.sql
+settings.TABLE.sql
 users.users_pkey.CONSTRAINT.sql
+settings.table_name_pk.CONSTRAINT.sql
 users.encrypt_pass.TRIGGER.sql
 users.ensure_user_role_exists.TRIGGER.sql
 users.users_notify.TRIGGER.sql
@@ -41,5 +43,3 @@ FUNCTION.user_delete.email.cv.ACL.sql
 FUNCTION.user_insert.email.cv.ACL.sql
 FUNCTION.validate.email.cv.ACL.sql
 FUNCTION.verify_token.token.text,.algorithm.text.ACL.sql
-settings.TABLE.sql
-settings.table_name_pk.CONSTRAINT.sql

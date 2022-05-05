@@ -30,11 +30,11 @@
             : pageHumanName[page],
         url:
           !authData || !authData.token
-            ? 'auth/login?redir=' + encodeURIComponent(`/${page}`)
+            ? '/auth/login?redir=' + encodeURIComponent(`/${page}`)
             : !authData.approved
-            ? 'auth/unapproved-user?redir=' + encodeURIComponent(`/${page}`)
+            ? '/auth/unapproved-user?redir=' + encodeURIComponent(`/${page}`)
             : !authData.validated
-            ? 'auth/unvalidated-user?redir=' + encodeURIComponent(`/${page}`)
+            ? '/auth/unvalidated-user?redir=' + encodeURIComponent(`/${page}`)
             : '/'+page,
       }
     }
@@ -74,7 +74,7 @@
   let cursegment
   let selected
   $: {
-    cursegment = $page.path.slice(1)
+    cursegment = $page.url.pathname.slice(1)
     selected = cursegment
   }
   const handleKey = (e) => {

@@ -12,8 +12,4 @@ CREATE FUNCTION public.verify_token(token text, algorithm text DEFAULT 'HS256'::
 $$;
 
 
-SET default_tablespace = '';
-
-SET default_table_access_method = heap;
-
 --

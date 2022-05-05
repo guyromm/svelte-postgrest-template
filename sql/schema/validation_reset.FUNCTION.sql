@@ -5,7 +5,7 @@ CREATE FUNCTION public.validation_reset() RETURNS json
     LANGUAGE plpgsql SECURITY DEFINER
     AS $$
 DECLARE
-    cur_email text = current_setting('request.jwt.claim.email'::text, TRUE);
+    cur_email text = current_setting('request.jwt.claims', true)::json->>'email';
 BEGIN
     IF cur_email IS NULL THEN
         RAISE invalid_password USING MESSAGE = 'not currently logged in!';

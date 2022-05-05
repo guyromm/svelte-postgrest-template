@@ -5,7 +5,7 @@ CREATE FUNCTION public.user_validated(_email text, is_valid boolean) RETURNS pub
     LANGUAGE plpgsql SECURITY DEFINER
     AS $$
 BEGIN
-    IF CURRENT_SETTING('request.jwt.claim.role'::text, TRUE)::text != 'admin' THEN
+    IF current_setting('request.jwt.claims', true)::json->>'role' != 'admin' THEN
         RAISE insufficient_privilege;
     END IF;
 

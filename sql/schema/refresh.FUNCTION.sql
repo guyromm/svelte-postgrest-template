@@ -7,7 +7,7 @@ CREATE FUNCTION public.refresh() RETURNS public.jwt_token
 declare
     result public.jwt_token;
 begin
- if current_setting('request.jwt.claim.email'::text, true) is null then
+ if current_setting('request.jwt.claims', true)::json->>'email' is null then
       raise invalid_password using message = 'not currently logged in!';
       end if;
 
@@ -22,7 +22,7 @@ begin
         approved,
         extract(epoch from now())::integer + 60*60 as exp
     from basic_auth.users
-    where email=current_setting('request.jwt.claim.email'::text, true)
+    where email=current_setting('request.jwt.claims', true)::json->>'email'
     ) r
     into result;
     return result;

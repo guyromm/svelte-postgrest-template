@@ -58,7 +58,7 @@ export async function login(
       txt && txt.includes('already exists') ? 'user exists' : 'unknown'
     return { status: 'error', error: err, cause, json, txt }
   }
-  return { status: 'ok', result: json[0] }
+  return { status: 'ok', result: json }
   //return json[0];
 }
 

@@ -4,7 +4,7 @@
 CREATE FUNCTION public.role(email character varying, newrole character varying) RETURNS void
     LANGUAGE sql SECURITY DEFINER
     AS $$
-update basic_auth.users set role=newrole where email=role.email and email<>current_setting('request.jwt.claim.email'::text, true) and role<>newrole;
+update basic_auth.users set role=newrole where email=role.email and email<>current_setting('request.jwt.claims', true)::json->>'email' and role<>newrole;
 $$;
 
 
