@@ -1,5 +1,5 @@
 <script>
-  import { onMount } from 'svelte'
+  import { onMount } from 'svelte';
   import { goto } from '$app/navigation';
   import {
     login,
@@ -10,185 +10,186 @@
     validateByToken,
     validationReset,
     pass_reset_new,
-    pass_reset,
-  } from '../../../common/postgrest.js'
-  import { parseToken, authDataStore } from '../lib/stores.js'
-  import { parse } from 'qs'
+    pass_reset
+  } from '../../../common/postgrest.js';
+  import { parseToken, authDataStore } from '../lib/stores.js';
+  import { parse } from 'qs';
 
-  const l = console.log
+  const l = console.log;
 
+  import { page } from '$app/stores';
+  const FBAPPID = import.meta.env.VITE_FACEBOOK_APP_ID;
+  const GOOGLECLIENTID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 
-  import {page} from '$app/stores';
-  const FBAPPID = import.meta.env.VITE_FACEBOOK_APP_ID
-  const GOOGLECLIENTID = import.meta.env.VITE_GOOGLE_CLIENT_ID
+  export let mode = undefined;
 
-  export let mode = undefined
-
-  let GoogleAuth
-  let FacebookAuth
+  let GoogleAuth;
+  let FacebookAuth;
 
   /* email token validation vars */
-  let token = $page.url.searchParams.get('token')
-  let tokenValid = false
-  let thankYou = false
-  let redir = $page.url.searchParams.get('redir')
-  let authToken
-  let validationProcess = false
+  let token = $page.url.searchParams.get('token');
+  let tokenValid = false;
+  let thankYou = false;
+  let redir = $page.url.searchParams.get('redir');
+  let authToken;
+  let validationProcess = false;
 
   if (mode === 'validate') {
-    validationProcess = true
+    validationProcess = true;
   }
 
   onMount(async () => {
-    const module = await import('@beyonk/svelte-social-auth')
-    FacebookAuth = module.FacebookAuth
-    GoogleAuth = module.GoogleAuth
-    parseToken()
-    let user
+    const module = await import('@beyonk/svelte-social-auth');
+    FacebookAuth = module.FacebookAuth;
+    GoogleAuth = module.GoogleAuth;
+    parseToken();
+    let user;
     if (mode === 'validate') {
-      user = await validateByToken(token, authData)
-      l('vtok', user)
+      user = await validateByToken(token, authData);
+      l('vtok', user);
       if (user) {
-        authToken = user.token.token
-        email = user.email ? user.email : ''
-        redir = '/'
+        authToken = user.token.token;
+        email = user.email ? user.email : '';
+        redir = '/';
       }
       //l('authDataStore',authDataStore);
     } else if (redir) {
-      let rdArgs = parse(redir.split('?')[1])
+      let rdArgs = parse(redir.split('?')[1]);
       if (rdArgs.validation_token) {
-        user = await validateByToken(rdArgs.validation_token, authData)
-        l('vtok', user)
-        if (user && user.token) authToken = user.token
+        user = await validateByToken(rdArgs.validation_token, authData);
+        l('vtok', user);
+        if (user && user.token) authToken = user.token;
         else if (user && user.email) {
-          email = user.email
-          error = user.status
+          email = user.email;
+          error = user.status;
         }
         //l('validation resulted in',tokenValid,thankYou);
       }
     }
     if (authToken) {
-      l('setting an auth cookie', authToken)
-      createCookie('auth', authToken)
-      parseToken()
-      tokenValid = thankYou = true // display thankyou notice without redirecting
+      l('setting an auth cookie', authToken);
+      createCookie('auth', authToken);
+      parseToken();
+      tokenValid = thankYou = true; // display thankyou notice without redirecting
     }
-    if (redir && tokenValid) goto(redir)
-    validationProcess = false
-  })
-  let email = $page.url.searchParams.get('email') || ''
-  let pass = ''
-  let confirm_pass = ''
-  let error
+    if (redir && tokenValid) goto(redir);
+    validationProcess = false;
+  });
+  let email = $page.url.searchParams.get('email') || '';
+  let pass = '';
+  let confirm_pass = '';
+  let error;
 
-  let disabled
+  let disabled;
   $: {
-    disabled = !email || !pass
+    disabled = !email || !pass;
   }
   $: {
-    email = email.trim().toLowerCase()
+    email = email.trim().toLowerCase();
   }
   $: {
-    if (authData && !authData.validated && !authData.is_expired && mode!='validate')
-      mode='unvalidated';
+    if (authData && !authData.validated && !authData.is_expired && mode != 'validate')
+      mode = 'unvalidated';
   }
-  $: if ((mode === 'unvalidated' && authData.validated) || (mode === 'unapproved' && authData.approved)) {
-    goto('/')
+  $: if (
+    (mode === 'unvalidated' && authData.validated) ||
+    (mode === 'unapproved' && authData.approved)
+  ) {
+    goto('/');
   }
 
-  let authData
-  const unsubscribe = authDataStore.subscribe((value) => (authData = value))
+  let authData;
+  const unsubscribe = authDataStore.subscribe((value) => (authData = value));
 
   async function loginWorker(email, pass, mode, tok = null) {
     try {
-      const lres = await login(email, pass, mode, tok)
+      const lres = await login(email, pass, mode, tok);
       if (lres && lres.status === 'ok') {
-        l('setting auth to', lres.result.token, 'am at', location.search)
-        createCookie('auth', lres.result.token)
-        parseToken()
-        error = undefined
-        let search = parse(location.search.slice(1))
+        l('setting auth to', lres.result.token, 'am at', location.search);
+        createCookie('auth', lres.result.token);
+        parseToken();
+        error = undefined;
+        let search = parse(location.search.slice(1));
         if (search.redir) {
-          l('gotta redir to', search.redir)
-          goto(search.redir)
+          l('gotta redir to', search.redir);
+          goto(search.redir);
         } else {
-          goto('/')
+          goto('/');
         }
       } else {
         if (lres.json.code === '23505') {
           // TODO fix the error message on the server side
-          error = `User with email "${email}" already exists`
+          error = `User with email "${email}" already exists`;
         } else {
-          error = lres.json.message
+          error = lres.json.message;
         }
       }
     } catch (err) {
-      l('caught err', err, err.message)
-      error = 'exception: ' + err.toString()
+      l('caught err', err, err.message);
+      error = 'exception: ' + err.toString();
     }
   }
 
   const performLogin = async (e, mode = 'login') => {
-    return await loginWorker(email, pass, mode)
-  }
+    return await loginWorker(email, pass, mode);
+  };
 
-  const performRegistration = async (e) => performLogin(e, 'register')
+  const performRegistration = async (e) => performLogin(e, 'register');
 
-  const randPass = () => Math.random().toString(36).slice(-8)
+  const randPass = () => Math.random().toString(36).slice(-8);
 
   const googleAuth = async (e) => {
-    const u = e.detail.user
-    l('detail.user=', u, Object.getOwnPropertyNames(Object.getPrototypeOf(u)))
-    const em = u.getBasicProfile().getEmail()
+    const u = e.detail.user;
+    l('detail.user=', u, Object.getOwnPropertyNames(Object.getPrototypeOf(u)));
+    const em = u.getBasicProfile().getEmail();
     return await loginWorker(em, randPass(), 'register', {
       ...u,
-      type: 'google',
-    })
-  }
+      type: 'google'
+    });
+  };
 
   const performLogout = () => {
-    eraseCookie('auth')
-    l('have reset auth cookie, hopefully:', getCookie())
-    parseToken()
-    redir = ''
-    setMode('login')
-  }
+    eraseCookie('auth');
+    l('have reset auth cookie, hopefully:', getCookie());
+    parseToken();
+    redir = '';
+    setMode('login');
+  };
   const fbAuthSuccess = async (r) => {
-    l('fbAuthSuccess', r)
-    const token = r.detail.accessToken
+    l('fbAuthSuccess', r);
+    const token = r.detail.accessToken;
     const response = await fetch(
       `https://graph.facebook.com/me?fields=id,name,email&access_token=${token}`
-    )
-    l('info obtain res:', response)
-    let j = await response.json()
-    const em = j.email
+    );
+    l('info obtain res:', response);
+    let j = await response.json();
+    const em = j.email;
     return await loginWorker(em, randPass(), 'register', {
       ...r.detail,
       type: 'facebook',
-      name: j.name,
-    })
-  }
-  const setMode = (nm) => (mode = nm)
+      name: j.name
+    });
+  };
+  const setMode = (nm) => (mode = nm);
 
-  let resetForm
-  let loginForm
-  let registerForm
+  let resetForm;
+  let loginForm;
+  let registerForm;
 
-  $: resetForm = '/auth/pass-reset?email=' + encodeURIComponent(email)
-  $: loginForm = '/auth/login?email=' + encodeURIComponent(email)
-  $: registerForm = '/auth/register?email=' + encodeURIComponent(email)
+  $: resetForm = '/auth/pass-reset?email=' + encodeURIComponent(email);
+  $: loginForm = '/auth/login?email=' + encodeURIComponent(email);
+  $: registerForm = '/auth/register?email=' + encodeURIComponent(email);
   $: if (pass || email || confirm_pass) {
-    error = ''
+    error = '';
   }
 
   const validationLinkHandle = async () => {
-    let error = null
-    const response = await validationReset()
+    let error = null;
+    const response = await validationReset();
     if (!response.ok) {
-      error = (await response.json()).message
+      error = (await response.json()).message;
     }
-  }
-
+  };
 </script>
 
 <div class="auth-wrapper">
@@ -202,11 +203,7 @@
           <p>Your token is valid! Authenticating & redirecting</p>-->
         {:else}
           <p>
-            Your token is either invalid or has been used. Please <a
-              href={loginForm}
-            >
-              login
-            </a>
+            Your token is either invalid or has been used. Please <a href={loginForm}> login </a>
             or
             <a href={resetForm}>reset your password.</a>
           </p>
@@ -275,15 +272,10 @@
               autocomplete="confirm-password"
             />
             <div class="error reg-error">
-              {confirm_pass && pass !== confirm_pass
-                ? "Passwords don't match"
-                : ''}
+              {confirm_pass && pass !== confirm_pass ? "Passwords don't match" : ''}
             </div>
           </label>
-          <button
-            disabled={!email || !pass || pass !== confirm_pass}
-            type="submit"
-          >
+          <button disabled={!email || !pass || pass !== confirm_pass} type="submit">
             Register
           </button>
         </form>
@@ -293,14 +285,12 @@
         Welcome, <b>{$authDataStore.email}</b>
         !
         <br />
-        You have not yet validated your email. Please follow the link that should
-        be in your inbox in order to complete validation.
+        You have not yet validated your email. Please follow the link that should be in your inbox in
+        order to complete validation.
         <br />
         <br />
         If you haven’t received an email from us, we can try & re-send it:
-        <a href="/" on:click|preventDefault={validationLinkHandle}>
-          resend validation link.
-        </a>
+        <a href="/" on:click|preventDefault={validationLinkHandle}> resend validation link. </a>
       </p>
       <button on:click={performLogout}>Logout</button>
     {:else if mode === 'unapproved'}
@@ -322,11 +312,7 @@
         <span>Approved: {authData.approved}</span>
         <span>Validated: {authData.validated}</span>
         <span>
-          Expiry: {(
-            (new Date(authData.exp) - new Date()) /
-            1000 /
-            3600
-          ).toLocaleString()}h
+          Expiry: {((new Date(authData.exp) - new Date()) / 1000 / 3600).toLocaleString()}h
         </span>
         <span>Is expired: {authData.is_expired}</span>
         <a href={resetForm}>Reset password</a>
@@ -334,11 +320,7 @@
       </div>
     {:else if mode === 'social'}
       <h4>Google sign-in</h4>
-      <svelte:component
-        this={GoogleAuth}
-        clientId={GOOGLECLIENTID}
-        on:auth-success={googleAuth}
-      />
+      <svelte:component this={GoogleAuth} clientId={GOOGLECLIENTID} on:auth-success={googleAuth} />
 
       <svelte:component
         this={FacebookAuth}
@@ -400,5 +382,4 @@
   p a {
     font-size: 1em;
   }
-
 </style>

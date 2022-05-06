@@ -1,58 +1,57 @@
 <script>
-  import { pass_reset, pass_reset_new } from '../../../common/postgrest.js'
-  import { parseToken, authDataStore } from '../lib/stores.js'
-  import { goto } from '$app/navigation'
+  import { pass_reset, pass_reset_new } from '../../../common/postgrest.js';
+  import { parseToken, authDataStore } from '../lib/stores.js';
+  import { goto } from '$app/navigation';
 
-  const l = (...a) => console.log(...a)
+  const l = (...a) => console.log(...a);
 
-  import {page} from '$app/stores';
-  export let mode
+  import { page } from '$app/stores';
+  export let mode;
 
-  let email = $page.query.get('email') || ''
-  let pass = ''
-  let error = null
-  let pass_reset_success = false
-  let confirm_pass = ''
+  let email = $page.query.get('email') || '';
+  let pass = '';
+  let error = null;
+  let pass_reset_success = false;
+  let confirm_pass = '';
   authDataStore.subscribe((value) => {
-    email = value ? value.email : email //l('authDataStore',value);
-  })
-  parseToken()
+    email = value ? value.email : email; //l('authDataStore',value);
+  });
+  parseToken();
 
-  let disabled
+  let disabled;
   $: {
-    disabled = !email || !pass
+    disabled = !email || !pass;
   }
 
   const performPassReset = async () => {
-    error = null
-    const response = await pass_reset(email)
+    error = null;
+    const response = await pass_reset(email);
     if (response.ok) {
-      pass_reset_success = true
+      pass_reset_success = true;
     } else {
-      error = (await response.json()).message
+      error = (await response.json()).message;
     }
-  }
+  };
 
   const performPassResetNew = async () => {
-    error = null
-    let token = $page.query.get('token')
+    error = null;
+    let token = $page.query.get('token');
     if (token) {
       const response = await pass_reset_new({
         token: token,
-        pass,
-      })
+        pass
+      });
       if (response.ok) {
-        pass_reset_success = true
+        pass_reset_success = true;
       } else {
-        error = (await response.json()).message
+        error = (await response.json()).message;
       }
     } else {
-      error = 'Undefined token'
+      error = 'Undefined token';
     }
-  }
+  };
 
-  let srcLogo = '/img/logo.png'
-
+  let srcLogo = '/img/logo.png';
 </script>
 
 <div class="auth-wrapper">
@@ -66,16 +65,11 @@
         {:else}
           <br />
           <p>
-            Enter your user account's verified email address and we will send
-            you a password reset link.
+            Enter your user account's verified email address and we will send you a password reset
+            link.
           </p>
           <form on:submit|preventDefault={performPassReset}>
-            <input
-              placeholder="Email"
-              type="email"
-              bind:value={email}
-              required
-            />
+            <input placeholder="Email" type="email" bind:value={email} required />
             {#if error}<div class="error">{error}</div>{/if}
             <button disabled={!email} type="submit" class="primary">
               Send password reset email
@@ -93,12 +87,7 @@
           </div>
         {:else}
           <form on:submit|preventDefault={performPassResetNew}>
-            <input
-              placeholder="New password"
-              type="password"
-              bind:value={pass}
-              required
-            />
+            <input placeholder="New password" type="password" bind:value={pass} required />
             <div>
               <input
                 placeholder="Confirm password"
@@ -107,17 +96,11 @@
                 required
               />
               <div class="error">
-                {confirm_pass && pass !== confirm_pass
-                  ? "Passwords don't match"
-                  : ''}
+                {confirm_pass && pass !== confirm_pass ? "Passwords don't match" : ''}
               </div>
             </div>
             <div>
-              <button
-                disabled={!pass || pass !== confirm_pass}
-                type="submit"
-                class="primary"
-              >
+              <button disabled={!pass || pass !== confirm_pass} type="submit" class="primary">
                 Change
               </button>
               {#if error}<div class="error new-pass">{error}</div>{/if}
@@ -164,5 +147,4 @@
   .auth-wrapper > div:only-child {
     height: calc(100% - 4em);
   }
-
 </style>

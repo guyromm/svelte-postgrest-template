@@ -1,9 +1,8 @@
 <script>
-  export let status
-  export let error
+  export let status;
+  export let error;
 
-  const dev = import.meta.env.VITE_NODE_ENV === 'development'
-
+  const dev = import.meta.env.VITE_NODE_ENV === 'development';
 </script>
 
 <svelte:head>
@@ -39,5 +38,4 @@
       font-size: 4em;
     }
   }
-
 </style>

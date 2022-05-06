@@ -5,20 +5,27 @@ import adapter from '@sveltejs/adapter-static';
 const l = console.log;
 
 const config = {
-	kit: {
-		// hydrate the <div id="svelte"> element in src/app.html
-	  /*target: '#svelte',*/
-	    //paths: { base: "/" },
-	  adapter: adapter(),
-	  /*ssr:false,*/
-	  /*paths: {base:''},
+  kit: {
+    // hydrate the <div id="svelte"> element in src/app.html
+    /*target: '#svelte',*/
+    //paths: { base: "/" },
+    adapter: adapter(),
+    /*ssr:false,*/
+    /*paths: {base:''},
 	  adapter: adapter({
 	    			pages: 'build',
 			assets: 'build',
 			fallback: null
 			})*/
-	    vite:{server:{hmr:{protocol:process.env.HMR_PROTO||'ws',port:process.env.HMR_PORT||process.env.APP_PORT}}}
-	}
+    vite: {
+      server: {
+        hmr: {
+          protocol: process.env.HMR_PROTO || 'ws',
+          port: process.env.HMR_PORT || process.env.APP_PORT
+        }
+      }
+    }
+  }
 };
 
 export default config;
