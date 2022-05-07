@@ -3,11 +3,12 @@
   "version": "1.0.0",
   "main": "index.js",
   "dependencies": {
+    "bent": "^7.3.12",
     "delay": "^4.4.0",
     "dotenv": "^10.0.0",
     "get-port": "^5.1.1",
     "micro": "^9.3.4",
     "node-fetch": "^2.6.1",
-    "postgrest": "^1.0.2"
+    "tmp": "^0.2.1"
   }
 }

@@ -6,7 +6,8 @@ source $DIR/.env
 PGJWTFN=pgjwt/pgjwt--0.1.0.sql
 [[ ! -z "$RDS" ]] && [[ -f "$PGJWTFN" ]] && (
     echo '* rds' ;
-    (echo 'create extension pgcrypto;' ;
+    (
+     echo 'create extension pgcrypto;' ;
      echo 'drop role if exists admin;';
      echo 'drop role if exists client;';
      echo 'drop role if exists anon;';          
@@ -22,7 +23,7 @@ echo '* db creation' && \
 	(
 	    (cd sql/schema ;
 	     #cat order.txt | xargs -t -n1 sh -c '../../psql.sh -v ON_ERROR_STOP=ON -f $0 || exit 255' ;
-	     ( ( [[ ! -z "$RDS" ]] && echo ../pgjwt.sql || echo '../pgjwt-nords.sql' ) ; echo 00 ; cat order.txt | grep -v pgjwt ) | xargs cat | \
+	     ( ( [[ ! -z "$RDS" ]] && echo ../pgjwt.sql || echo '../pgjwt-nords.sql' ) ; echo 00 ; cat order.txt | grep -v 'pgjwt' ) | xargs cat | \
 		 ( [[ ! -z "$RDS" ]] && sed -E "s/current_setting\('app.jwt_secret'\)/'"$JWTSECRET"'/g" || cat )
 		 
 	    ) | $DIR/psql.sh --quiet -v ON_ERROR_STOP=ON ) && \
