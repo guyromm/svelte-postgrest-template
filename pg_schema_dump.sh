@@ -15,10 +15,10 @@ mkdir -p sql/schema && \
         (
             #echo '-- SPLIT '$FN ; # disabled to not trigger train diffs
             cat $FN
+	    
 	    echo "$NF" >> order.txt
 	    #echo $NF ;
-        ) > $NF && rm $FN
-        #echo "mv -n $FN $FN$NF"
+        )  | sed -E "s/ '"$JWTSECRET"'/ current_setting('app.jwt_secret')/" > $NF && rm $FN
     done
 [ "$(wc -l < order.txt)" -eq "$(sort -u order.txt | wc -l)" ] || (echo 'FILENAMES NOT UNIQUE!' ; exit 1)
 cd -

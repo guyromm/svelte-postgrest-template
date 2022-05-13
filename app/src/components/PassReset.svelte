@@ -1,14 +1,17 @@
 <script>
   import { pass_reset, pass_reset_new } from '../../../common/postgrest.js';
+  import {postfix} from '../../../common/funcs.js';
   import { parseToken, authDataStore } from '../lib/stores.js';
   import { goto } from '$app/navigation';
-
+  import {onMount} from 'svelte';
+  
   const l = (...a) => console.log(...a);
 
   import { page } from '$app/stores';
   export let mode;
 
-  let email = $page.query.get('email') || '';
+  
+  let email=''
   let pass = '';
   let error = null;
   let pass_reset_success = false;
@@ -16,6 +19,9 @@
   authDataStore.subscribe((value) => {
     email = value ? value.email : email; //l('authDataStore',value);
   });
+  onMount(() => {
+      email = $page.url.searchParams.get('email') || '';
+  })
   parseToken();
 
   let disabled;
@@ -52,6 +58,7 @@
   };
 
   let srcLogo = '/img/logo.png';
+  
 </script>
 
 <div class="auth-wrapper">
@@ -82,7 +89,7 @@
           <div>
             Successfuly changed.
             {#if !$authDataStore}
-              <a href="/auth/login">Sign in</a>
+              <a href={`/auth/login${postfix}`}>Sign in</a>
             {/if}
           </div>
         {:else}

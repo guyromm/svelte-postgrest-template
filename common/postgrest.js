@@ -1,7 +1,7 @@
 //import fetch from 'node-fetch'
 import jwt_decode from 'jwt-decode'
 import qs from 'qs'
-
+import {postfix} from './funcs.js';
 const l = console.log
 
 export const isnode = () =>
@@ -64,7 +64,7 @@ export async function login(
 
 function redirToAuth() {
   if (isnode()) throw new Error('authentication error')
-  let rdirt = '/auth/login?redir=' + encodeURIComponent(window.location.href)
+  let rdirt = `/auth/login${postfix}?redir=` + encodeURIComponent(window.location.href)
   //l('about to redir to',rdirt,'with backredir being',window.location.href);
   //throw new Error(`about to redir to ${rdirt}`);
   window.location.href = rdirt

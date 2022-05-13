@@ -12,6 +12,7 @@
     pass_reset_new,
     pass_reset
   } from '../../../common/postgrest.js';
+  import {postfix} from '../../../common/funcs.js';
   import { parseToken, authDataStore } from '../lib/stores.js';
   import { parse } from 'qs';
 
@@ -27,10 +28,10 @@
   let FacebookAuth;
 
   /* email token validation vars */
-  let token = $page.url.searchParams.get('token');
+  let token;
   let tokenValid = false;
   let thankYou = false;
-  let redir = $page.url.searchParams.get('redir');
+  let redir;
   let authToken;
   let validationProcess = false;
 
@@ -38,7 +39,14 @@
     validationProcess = true;
   }
 
+  function loadParams() {
+    token = $page.url.searchParams.get('token');
+    redir = $page.url.searchParams.get('redir');
+    email = $page.url.searchParams.get('email') || ''
+  }
+  
   onMount(async () => {
+
     const module = await import('@beyonk/svelte-social-auth');
     FacebookAuth = module.FacebookAuth;
     GoogleAuth = module.GoogleAuth;
@@ -75,7 +83,7 @@
     if (redir && tokenValid) goto(redir);
     validationProcess = false;
   });
-  let email = $page.url.searchParams.get('email') || '';
+  let email = ''
   let pass = '';
   let confirm_pass = '';
   let error;
@@ -176,9 +184,9 @@
   let loginForm;
   let registerForm;
 
-  $: resetForm = '/auth/pass-reset?email=' + encodeURIComponent(email);
-  $: loginForm = '/auth/login?email=' + encodeURIComponent(email);
-  $: registerForm = '/auth/register?email=' + encodeURIComponent(email);
+  $: resetForm = `/auth/pass-reset${postfix}?email=` + encodeURIComponent(email);
+  $: loginForm = `/auth/login${postfix}?email=` + encodeURIComponent(email);
+  $: registerForm = `/auth/register${postfix}?email=` + encodeURIComponent(email);
   $: if (pass || email || confirm_pass) {
     error = '';
   }

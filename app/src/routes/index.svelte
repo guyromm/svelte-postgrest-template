@@ -12,7 +12,11 @@
     Grid,
     Box
   } from '../components/layout';
+  import {postfix} from '../../../common/funcs.js';
   import Presentation from '../components/Presentation.svelte';
+  function L(n) {
+    return '/'+n+postfix;
+  }
 </script>
 
 <h1>
@@ -20,7 +24,7 @@
 </h1>
 <Grid minWidth="12rem">
   <Presentation>
-    <a slot="title" href="stack"><h5>Stack</h5></a>
+    <a slot="title" href={L("stack")}><h5>Stack</h5></a>
     <Stack recursive>
       <ul>
         <li><p>some</p></li>
@@ -32,12 +36,12 @@
   </Presentation>
 
   <Presentation>
-    <a href="box"><h5>Box</h5></a>
+    <a href={L("box")}><h5>Box</h5></a>
     <Box padding="s1" />
   </Presentation>
 
   <Presentation>
-    <a slot="title" href="bracket"><h5>Bracket</h5></a>
+    <a slot="title" href={L("bracket")}><h5>Bracket</h5></a>
     <Bracket>
       <div slot="left">
         <Box padding="zero">
@@ -54,7 +58,7 @@
   </Presentation>
 
   <Presentation>
-    <a slot="title" href="cluster"><h5>Cluster</h5></a>
+    <a slot="title" href={L("cluster")}><h5>Cluster</h5></a>
     <Cluster>
       <ul style="list-style: none">
         <li><p>Content</p></li>
@@ -67,7 +71,7 @@
   </Presentation>
 
   <Presentation>
-    <a slot="title" href="sidebar"><h5>Sidebar</h5></a>
+    <a slot="title" href={L("sidebar")}><h5>Sidebar</h5></a>
     <Sidebar>
       <div slot="sidebar">
         <Box padding="s-2" color="white">
@@ -86,7 +90,7 @@
   </Presentation>
 
   <Presentation>
-    <a slot="title" href="switcher"><h5>Switcher</h5></a>
+    <a slot="title" href={L("switcher")}><h5>Switcher</h5></a>
     <Switcher minWidth="13rem">
       <Box />
       <Box />
@@ -95,7 +99,7 @@
   </Presentation>
 
   <Presentation>
-    <a slot="title" href="cover"><h5>Cover</h5></a>
+    <a slot="title" href={L("cover")}><h5>Cover</h5></a>
     <Cover minHeight="10vh">
       <div slot="above">
         <Box padding="zero" />
@@ -108,7 +112,7 @@
   </Presentation>
 
   <Presentation>
-    <a slot="title" href="."><h5>Grid</h5></a>
+    <a slot="title" href="/"><h5>Grid</h5></a>
     <div style="min-width: 8rem;">
       <Grid minWidth="s1">
         <Box padding="s-3" color="white">X</Box>
@@ -125,7 +129,7 @@
   </Presentation>
 
   <Presentation>
-    <a slot="title" href="frame"><h5>Frame</h5></a>
+    <a slot="title" href={L("frame")}><h5>Frame</h5></a>
     <Box padding="zero">
       <Frame>
         <img src="favicon.png" alt="favicon" />
@@ -134,7 +138,7 @@
   </Presentation>
 
   <Presentation>
-    <a slot="title" href="reel"><h5>Reel</h5></a>
+    <a slot="title" href={L("reel")}><h5>Reel</h5></a>
     <Box padding="zero" backgroundColor="white">
       <div style="max-width: 12rem;">
         <Reel itemWidth="s4">
@@ -154,7 +158,7 @@
   </Presentation>
 
   <Presentation>
-    <a slot="title" href="imposter"><h5>Imposter</h5></a>
+    <a slot="title" href={L("imposter")}><h5>Imposter</h5></a>
     <Box padding="zero" backgroundColor="white">
       <div style="max-width: 12rem; position: relative;">
         <p>

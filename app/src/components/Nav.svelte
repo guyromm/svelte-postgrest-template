@@ -2,12 +2,13 @@
   import { goto } from '$app/navigation';
   import { parseToken, authDataStore } from '../lib/stores';
   import { login } from '../../../common/postgrest.js';
+  import {postfix} from '../../../common/funcs.js';
   import { page } from '$app/stores';
   import Switcher from '../components/layout/Switcher.svelte';
   import Box from '../components/layout/Box.svelte';
 
   const pagenames = [
-    'grid',
+    'home',
     'stack',
     'box',
     'bracket',
@@ -35,19 +36,23 @@
   const updauth = (value) => {
     authData = value;
     for (const page of pagenames) {
-      navpages[page] = {
-        label:
-          page === 'auth'
-            ? pageHumanName.auth + (authData ? ` (${authData.email})` : '')
-            : pageHumanName[page],
-        url:
-          !authData || !authData.token
-            ? '/auth/login?redir=' + encodeURIComponent(`/${page}`)
+      let url;
+      if (page==='home')
+	url='/'
+      else
+	url = !authData || !authData.token
+            ? `/auth/login${postfix}?redir=` + encodeURIComponent(`/${page}${postfix}`)
             : !authData.approved
-            ? '/auth/unapproved-user?redir=' + encodeURIComponent(`/${page}`)
+            ? `/auth/unapproved-user${postfix}?redir=` + encodeURIComponent(`/${page}`)
             : !authData.validated
-            ? '/auth/unvalidated-user?redir=' + encodeURIComponent(`/${page}`)
-            : '/' + page
+            ? `/auth/unvalidated-user${postfix}?redir=` + encodeURIComponent(`/${page}`)
+            : '/' + page+postfix
+      const label = page === 'auth'
+            ? pageHumanName.auth + (authData ? ` (${authData.email})` : '')
+            : pageHumanName[page]
+      navpages[page] = {
+        label,
+        url,
       };
     }
   };

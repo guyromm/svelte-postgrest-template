@@ -90,10 +90,12 @@ module.exports = {
     })
     //l('proxy res=',proxyRes);
     res.statusCode = proxyRes.status
-    res.headers = {
-      'Content-Type': 'application/json',
-      isBawse64Encoded: false,
-    }
+      res.headers = {
+	  "Access-Control-Allow-Headers" : "*",
+	  "Access-Control-Allow-Origin": "*",
+  	  'Content-Type': 'application/json',
+      }
+      l('res.headers=',res.headers)
     res.isBase64Encoded = false
     l('proxy statusCode', res.statusCode)
     //l('proxy size',res.size);

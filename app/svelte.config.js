@@ -8,15 +8,17 @@ const config = {
   kit: {
     // hydrate the <div id="svelte"> element in src/app.html
     /*target: '#svelte',*/
-    //paths: { base: "/" },
+    paths: { base: "/" },
+    trailingSlash:'ignore',
+    prerender:{default:true},
     adapter: adapter(),
-    /*ssr:false,*/
-    /*paths: {base:''},
+    //ssr:true,
+    paths: {base:''},
 	  adapter: adapter({
 	    			pages: 'build',
 			assets: 'build',
 			fallback: null
-			})*/
+	  }),
     vite: {
       server: {
         hmr: {

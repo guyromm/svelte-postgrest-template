@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "svelte-kit dev",
     "build": "svelte-kit build",
+    "upload_s3": "bash -c 'source .env && aws s3 sync --acl public-read build s3://$APP_S3_BUCKET && echo UPLOADED'",
     "preview": "svelte-kit preview",
     "lint": "prettier --check --plugin-search-dir=. . && eslint --ignore-path .gitignore .",
     "format": "prettier --write --plugin-search-dir=. ."
