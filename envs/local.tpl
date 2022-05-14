@@ -4,7 +4,6 @@ APP_BASE_URI=http://localhost:$APP_PORT
 DBHOST=localhost
 DBNAME=DBNAMEREPLACE
 DBADMINSUDO=postgres
-DBPASS=''
 DBUSER=''
 DBURIADMIN='postgres:///template1'
 DBURI="postgres:///$DBNAME"

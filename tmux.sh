@@ -38,9 +38,11 @@ echo '* destroying previous session' && \
 function create() {
 echo '* creating session' && \
     ti && \
-    echo '* creating window postgrest' && \
-    t rename-window -t "$session.0" "postgrest" && \
-    tsk postgrest 'source .env ; export DBURI ; export POSTGRESTPORT ; export JWTSECRET ; [[ ! -z "$POSTGRESTPORT" ]] && postgrest postgrest.conf || echo "no POSTGRESTPORT provided"' && \
+    ( [[ ! -z "$var" ]] && (
+	echo '* creating window postgrest' && \
+	    t rename-window -t "$session.0" "postgrest" && \
+	    tsk postgrest 'source .env ; export DBURI ; export POSTGRESTPORT ; export JWTSECRET ; [[ ! -z "$POSTGRESTPORT" ]] && postgrest postgrest.conf || echo "no POSTGRESTPORT provided"' && \
+	    )) && \
     echo '* app' && \
     tnw app && \
     tsk app "nvm use && cd app ; npm run dev -- --port=$APP_PORT" && \
