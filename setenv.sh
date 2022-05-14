@@ -14,5 +14,6 @@ echo '* symlinking .env.sh' && \
 	    #echo '# evaluating '$N
 	    echo "$N='"$EV"'"
 	done
+    echo ENV=$1
     ) > .env
 

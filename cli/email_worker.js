@@ -15,7 +15,7 @@ const l = console.log
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
 if (!process.env.APP_BASE_URI) throw new Error('no APP_BASE_URI!')
 
-const subscriber = createSubscriber({ connectionString: process.env.PGDSN })
+const subscriber = createSubscriber({ connectionString: process.env.DBURI })
 
 const nmargs = {
   service: process.env.EMAIL_SERVICE,
@@ -288,8 +288,8 @@ const listens = {pass_reset:pass_reset_listen,
 		};
 
 async function run() {
-  l('PGDSN',process.env.PGDSN);
-    opts.client = new pg.Client(process.env.PGDSN);
+  l('DBURI',process.env.DBURI);
+    opts.client = new pg.Client(process.env.DBURI);
     await opts.client.connect();
     await scon(opts);
     

@@ -9,17 +9,13 @@ const delay = require('delay')
 
 const l = (...a) => console.log(process.env.REV, 'IDX', ...a)
 let postgrestPort, postgrestUrl, server
-l('dsn:', process.env.PGDSN)
+l('dsn:', process.env.DBURI)
 async function startServer() {
   l('starting server...')
   postgrestPort = await getPort()
   l('port', postgrestPort)
   server = await postgrest.startServer({
-    dbUri:
-      process.env.PGDSN ||
-      process.env.POSTGRES_URI ||
-      process.env.POSTGRES_URL ||
-      'postgresql://postgres@localhost:5432/postgres',
+    dbUri:process.env.DBURI
     dbAnonRole: 'anon',
     dbSchema: 'public',
     serverPort: postgrestPort,

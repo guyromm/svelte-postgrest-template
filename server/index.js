@@ -19,7 +19,7 @@ const l = console.log
 const cors = { origin: '*', 'Access-Control-Allow-Origin': '*' } // FIXME!
 
 let isConnected = false
-const client = new pg.Client(process.env.PGDSN)
+const client = new pg.Client(process.env.DBURI)
 l('connstr is', process.env.DBURI)
 const server = http.createServer()
 

@@ -3,7 +3,7 @@
 ** RDS=1 in .env
 * install postgrest
 #+BEGIN_SRC bash
-cd postgrest-lambda/ && curl -L -s 'https://github.com/PostgREST/postgrest/releases/download/v9.0.0/postgrest-v9.0.0-linux-static-x64.tar.xz' | tar -Jxvf - ; cd - 
+cd lambda/ && curl -L -s 'https://github.com/PostgREST/postgrest/releases/download/v9.0.0/postgrest-v9.0.0-linux-static-x64.tar.xz' | tar -Jxvf - ; cd - 
 #+END_SRC
 * create lambda func
 function definition:
@@ -13,6 +13,6 @@ function definition:
 - Configure cross-origin resource sharing (CORS) :: true
 AWS_POSTGREST_LAMBDA_FUNC=the:function:arn
 POSTGREST_BASE_URI=https://ABCDEF.lambda-url.us-east-1.on.aws/
-PGDSN='postgres://postgres:RDSPASS@DBHOST/'
+DBURI='postgres://postgres:RDSPASS@DBHOST/'
 VITE_POSTGREST_PATH_AS_ARG=1
 POSTGREST_PATH_AS_ARG=1

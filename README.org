@@ -48,6 +48,36 @@ nvm use ; ./npm-init.sh
   ./setenv.sh local
 #+END_SRC
 
+* deploying on aws
+** create a separate env
+#+BEGIN_SRC bash
+test -f envs/aws || cp envs/local envs/aws
+echo RDS=1 >> envs/aws
+echo POSTGREST_PATH_AS_ARG=1 >> envs/aws
+echo 'VITE_POSTGREST_PATH_AS_ARG=$POSTGREST_PATH_AS_ARG' >> envs/aws
+RDS_PASSWORD=$(tr -dc A-Za-z0-9 </dev/urandom | head -c 16 ; echo '')
+egrep '^RDS_VPC_GROUP=' envs/aws || echo 'RDS_VPC_GROUP=SOMEVALUE' >> envs/aws
+egrep '^RDS_VPC_GROUP=' envs/aws || echo "RDS_PASSWORD=$RDS_PASSWORD" >> envs/aws
+./setenv.sh aws
+lambda/postgrest-download.sh
+#+END_SRC
+** create the rds
+#+BEGIN_SRC bash
+egrep '^RDS_HOSTNAME=' envs/aws || (./lambda/rds-create.sh | egrep '^RDS_HOSTNAME=' >> envs/aws)
+egrep '^DBURIADMIN=' envs/aws || echo 'DBURIADMIN="postgres://postgres:$RDS_PASSWORD@$RDS_HOSTNAME/template1"' >> envs/aws
+egrep '^DBURI=' envs/aws || echo 'DBURI="postgres://postgres:$RDS_PASSWORD@$RDS_HOSTNAME/"' >> envs/aws
+./setenv.sh aws
+#+END_SRC
+** create & deploy the lambda func
+#+BEGIN_SRC bash
+egrep '^LAMBDA_ROLE=' envs/aws && echo 'LAMBDA_ROLE_ALREADY_SET' || echo LAMBDA_ROLE=arn:iam:YOURLAMBDAROLE >> envs/aws
+./setenv.sh aws
+source .env
+lambda/pack.sh
+aws lambda create-function --function-name $APPNAME-postgrest --runtime nodejs14.x --role "$LAMBDA_ROLE" --zip-file fileb://lambda/function.zip --handler index.handler | tee envs/$ENV.lambda.json
+egrep '^AWS_POSTGREST_LAMBDA_FUNC=' envs/aws || echo 'AWS_POSTGREST_LAMBDA_FUNC='$(jq .FunctionName envs/$ENV.lambda.json -r) >> envs/aws
+#+END_SRC
+
 * database initialization
 #+BEGIN_SRC bash
   source .env
