@@ -71,15 +71,6 @@ echo 'DBURI="postgres://postgres:$RDS_PASSWORD@$RDS_HOSTNAME/"' | tee -a envs/aw
 )
 ./setenv.sh aws
 #+END_SRC
-
-#+RESULTS:
-| RDS_HOSTNAME=svelte-postgrest-template-test5.czemoyaft9tl.us-east-1.rds.amazonaws.com |            |         |      |            |        |    |    |     |      |
-| postgres://postgres:$RDS_PASSWORD@$RDS_HOSTNAME/template1                             |            |         |      |            |        |    |    |     |      |
-| postgres://postgres:$RDS_PASSWORD@$RDS_HOSTNAME/                                      |            |         |      |            |        |    |    |     |      |
-| *                                                                                     | removing   | old     | env  | (disregard | error  | if | no | env | set) |
-| *                                                                                     | symlinking | .env.sh |      |            |        |    |    |     |      |
-| *                                                                                     | evaluating | .env.sh | into | .env       | (node) |    |    |     |      |
-
 ** create & deploy the lambda func
 #+BEGIN_SRC bash
 source .env
@@ -91,19 +82,17 @@ egrep '^LAMBDA_ROLE=' envs/aws && echo 'LAMBDA_ROLE_ALREADY_SET' || (test -f env
 ./setenv.sh aws
 source .env
 lambda/pack.sh
-aws lambda create-function --function-name $APPNAME-postgrest --runtime nodejs14.x --role "$LAMBDA_ROLE" --zip-file fileb://lambda/function.zip --handler index.handler | tee envs/$ENV.lambda.json
+aws lambda create-function --function-name $APPNAME-postgrest --runtime nodejs14.x --role "$LAMBDA_ROLE" --zip-file fileb://lambda/function.zip --handler index.handler --timeout 15 | tee envs/$ENV.lambda.json
 egrep '^AWS_POSTGREST_LAMBDA_FUNC=' envs/aws || echo 'AWS_POSTGREST_LAMBDA_FUNC='$(jq .FunctionName envs/$ENV.lambda.json -r) >> envs/aws
 aws lambda create-function-url-config --function-name $APPNAME-postgrest --auth-type NONE --cors 'AllowOrigins=*' | tee envs/$ENV.lambda.url.json
 test -f envs/$ENV.lambda.url.json && sed -i -E 's/^POSTGREST_BASE_URI=(.*)$/POSTGREST_BASE_URI="'$(jq .FunctionUrl envs/$ENV.lambda.url.json -r | sed -E 's/\//\\\//g')'"/g' envs/aws
 #+END_SRC
-
 * database initialization
 #+BEGIN_SRC bash
   source .env
   echo 'DBNAME:'$DBNAME
   ./db_init.sh
 #+END_SRC
-
 * launch
 #+BEGIN_SRC bash
 ./tmux.sh
