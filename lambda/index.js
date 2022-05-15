@@ -15,7 +15,7 @@ async function startServer() {
   postgrestPort = await getPort()
   l('port', postgrestPort)
   server = await postgrest.startServer({
-    dbUri:process.env.DBURI
+    dbUri:process.env.DBURI,
     dbAnonRole: 'anon',
     dbSchema: 'public',
     serverPort: postgrestPort,
