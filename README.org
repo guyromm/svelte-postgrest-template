@@ -52,7 +52,7 @@ nvm use ; ./npm-init.sh
 ** create a separate env
 #+BEGIN_SRC bash
 test -f envs/aws || cp envs/local envs/aws
-echo RDS=1 >> envs/aws
+sed -i -E "s/^RDS=''$/RDS=1/g" envs/aws
 echo POSTGREST_PATH_AS_ARG=1 >> envs/aws
 echo 'VITE_POSTGREST_PATH_AS_ARG=$POSTGREST_PATH_AS_ARG' >> envs/aws
 RDS_PASSWORD=$(tr -dc A-Za-z0-9 </dev/urandom | head -c 16 ; echo '')
@@ -62,11 +62,12 @@ egrep '^RDS_PASSWORD=' envs/aws || echo "RDS_PASSWORD=$RDS_PASSWORD" >> envs/aws
 ./setenv.sh aws
 lambda/postgrest-download.sh
 #+END_SRC
+
 ** create the rds
 #+BEGIN_SRC bash
-egrep '^RDS_HOSTNAME=' envs/aws || (./lambda/rds-create.sh | egrep '^RDS_HOSTNAME=' >> envs/aws
-echo 'DBURIADMIN="postgres://postgres:$RDS_PASSWORD@$RDS_HOSTNAME/template1"' >> envs/aws
-echo 'DBURI="postgres://postgres:$RDS_PASSWORD@$RDS_HOSTNAME/"' >> envs/aws
+egrep '^RDS_HOSTNAME=' envs/aws || (./lambda/rds-create.sh | egrep '^RDS_HOSTNAME=' | tee -a envs/aws
+echo 'DBURIADMIN="postgres://postgres:$RDS_PASSWORD@$RDS_HOSTNAME/template1"' | tee -a envs/aws
+echo 'DBURI="postgres://postgres:$RDS_PASSWORD@$RDS_HOSTNAME/"' | tee -a envs/aws
 )
 ./setenv.sh aws
 #+END_SRC
