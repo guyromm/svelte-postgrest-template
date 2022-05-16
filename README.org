@@ -57,15 +57,15 @@ echo POSTGREST_PATH_AS_ARG=1 >> envs/aws
 echo 'VITE_POSTGREST_PATH_AS_ARG=$POSTGREST_PATH_AS_ARG' >> envs/aws
 RDS_PASSWORD=$(tr -dc A-Za-z0-9 </dev/urandom | head -c 16 ; echo '')
 aws rds describe-db-subnet-groups | tee /tmp/sng.json
-egrep '^RDS_VPC_GROUP=' envs/aws || echo 'RDS_VPC_GROUP='$(aws rds describe-db-subnet-groups | jq '.DBSubnetGroups[]|select(.DBSubnetGroupName | startswith("default-vpc-")).DBSubnetGroupName' -r) >> envs/aws
-egrep '^RDS_PASSWORD=' envs/aws || echo "RDS_PASSWORD=$RDS_PASSWORD" >> envs/aws
+egrep '^RDS_VPC_GROUP=(.+)$' envs/aws || echo 'RDS_VPC_GROUP='$(aws rds describe-db-subnet-groups | jq '.DBSubnetGroups[]|select(.DBSubnetGroupName | startswith("default-vpc-")).DBSubnetGroupName' -r) >> envs/aws
+egrep '^RDS_PASSWORD=(.+)$' envs/aws || echo "RDS_PASSWORD=$RDS_PASSWORD" >> envs/aws
 ./setenv.sh aws
 lambda/postgrest-download.sh
 #+END_SRC
 
 ** create the rds
 #+BEGIN_SRC bash
-egrep '^RDS_HOSTNAME=' envs/aws || (./lambda/rds-create.sh | egrep '^RDS_HOSTNAME=' | tee -a envs/aws
+egrep '^RDS_HOSTNAME=(.+)$' envs/aws || (./lambda/rds-create.sh | egrep '^RDS_HOSTNAME=' | tee -a envs/aws
 echo 'DBURIADMIN="postgres://postgres:$RDS_PASSWORD@$RDS_HOSTNAME/template1"' | tee -a envs/aws
 echo 'DBURI="postgres://postgres:$RDS_PASSWORD@$RDS_HOSTNAME/"' | tee -a envs/aws
 )
@@ -74,16 +74,16 @@ echo 'DBURI="postgres://postgres:$RDS_PASSWORD@$RDS_HOSTNAME/"' | tee -a envs/aw
 ** create & deploy the lambda func
 #+BEGIN_SRC bash
 source .env
-egrep '^LAMBDA_ROLE=' envs/aws || (
+egrep '^LAMBDA_ROLE=(.+)$' envs/aws || (
 aws iam create-role --role-name $APPNAME --assume-role-policy-document file://lambda/trust-policy.tpl.json | tee envs/$ENV.role.json
 aws iam attach-role-policy --role-name $APPNAME --policy-arn arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
 )
-egrep '^LAMBDA_ROLE=' envs/aws && echo 'LAMBDA_ROLE_ALREADY_SET' || (test -f envs/$ENV.role.json && (echo LAMBDA_ROLE=$(jq .Role.Arn envs/$ENV.role.json -r) | tee -a envs/aws) || echo 'NO_ROLE_FILE')
+egrep '^LAMBDA_ROLE=(.+)$' envs/aws && echo 'LAMBDA_ROLE_ALREADY_SET' || (test -f envs/$ENV.role.json && (echo LAMBDA_ROLE=$(jq .Role.Arn envs/$ENV.role.json -r) | tee -a envs/aws) || echo 'NO_ROLE_FILE')
 ./setenv.sh aws
 source .env
 lambda/pack.sh
 aws lambda create-function --function-name $APPNAME-postgrest --runtime nodejs14.x --role "$LAMBDA_ROLE" --zip-file fileb://lambda/function.zip --handler index.handler --timeout 15 | tee envs/$ENV.lambda.json
-egrep '^AWS_POSTGREST_LAMBDA_FUNC=' envs/aws || echo 'AWS_POSTGREST_LAMBDA_FUNC='$(jq .FunctionName envs/$ENV.lambda.json -r) >> envs/aws
+egrep '^AWS_POSTGREST_LAMBDA_FUNC=(.+)$' envs/aws || echo 'AWS_POSTGREST_LAMBDA_FUNC='$(jq .FunctionName envs/$ENV.lambda.json -r) | tee -a envs/aws
 aws lambda create-function-url-config --function-name $APPNAME-postgrest --auth-type NONE --cors 'AllowOrigins=*' | tee envs/$ENV.lambda.url.json
 test -f envs/$ENV.lambda.url.json && sed -i -E 's/^POSTGREST_BASE_URI=(.*)$/POSTGREST_BASE_URI="'$(jq .FunctionUrl envs/$ENV.lambda.url.json -r | sed -E 's/\//\\\//g')'"/g' envs/aws
 #+END_SRC
