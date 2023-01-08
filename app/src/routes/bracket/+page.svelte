@@ -1,7 +1,7 @@
 <script>
   import { loremIpsum } from 'lorem-ipsum';
-  import { Bracket, Box } from '../components/layout';
-  import Presentation from '../components/Presentation.svelte';
+  import { Bracket, Box } from '../../components/layout';
+  import Presentation from '../../components/Presentation.svelte';
 </script>
 
 <svelte:head><title>bracket</title></svelte:head>

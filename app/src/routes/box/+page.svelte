@@ -1,7 +1,7 @@
 <script>
   import { loremIpsum } from 'lorem-ipsum';
-  import { Box } from '../components/layout';
-  import Presentation from '../components/Presentation.svelte';
+  import { Box } from '../../components/layout';
+  import Presentation from '../../components/Presentation.svelte';
 </script>
 
 <svelte:head><title>box</title></svelte:head>

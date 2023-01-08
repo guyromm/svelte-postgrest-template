@@ -11,9 +11,9 @@
     Imposter,
     Grid,
     Box
-  } from '../components/layout';
+  } from '../../components/layout';
   import { loremIpsum } from 'lorem-ipsum';
-  import Presentation from '../components/Presentation.svelte';
+  import Presentation from '../../components/Presentation.svelte';
 </script>
 
 <h1><a href="https://every-layout.dev/layouts/reel/" target="blank">the reel</a></h1>

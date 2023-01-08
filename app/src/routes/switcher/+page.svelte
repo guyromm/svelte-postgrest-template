@@ -1,5 +1,5 @@
 <script>
-  import { Switcher, Box } from '../components/layout';
+  import { Switcher, Box } from '../../components/layout';
 </script>
 
 <a href="https://every-layout.dev/layouts/switcher/" target="_blank"><h1>Switcher</h1></a>

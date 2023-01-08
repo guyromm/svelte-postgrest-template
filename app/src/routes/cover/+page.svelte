@@ -1,5 +1,5 @@
 <script>
-  import { Cover, Box } from '../components/layout';
+  import { Cover, Box } from '../../components/layout';
   import { loremIpsum } from 'lorem-ipsum';
 </script>
 

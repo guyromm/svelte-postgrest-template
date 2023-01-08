@@ -1,7 +1,7 @@
 <script>
   import { loremIpsum } from 'lorem-ipsum';
-  import { Imposter, Box } from '../components/layout';
-  import Presentation from '../components/Presentation.svelte';
+  import { Imposter, Box } from '../../components/layout';
+  import Presentation from '../../components/Presentation.svelte';
 </script>
 
 <svelte:head><title>impostah</title></svelte:head>

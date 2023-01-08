@@ -1,6 +1,6 @@
 <script>
   import { loremIpsum } from 'lorem-ipsum';
-  import { Sidebar } from '../components/layout';
+  import { Sidebar } from '../../components/layout';
   let li = loremIpsum({ count: 20 });
 </script>
 

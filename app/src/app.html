@@ -14,7 +14,7 @@
     <link rel="stylesheet" href="/layouts-global.css" />
 
     <link rel="manifest" href="/manifest.json" crossorigin="use-credentials" />
-    <link rel="icon" type="image/png" href="/favicon.png" />
+    <link rel="icon" type="image/png" href="%sveltekit.assets%/favicon.png" />
 
     <!-- sveltekit generates a <style> tag containing critical CSS
 	     for the current page. CSS for the rest of the app is
@@ -22,12 +22,12 @@
 
     <!-- This contains the contents of the <svelte:head> component, if
 	     the current page has one -->
-    %svelte.head%
+    %sveltekit.head%
   </head>
-  <body>
+  <body data-sveltekit-preload-data="hover">
     <!-- The application will be rendered inside this element,
 	     because `src/client.js` references it -->
-    <div id="svelte">%svelte.body%</div>
+    <div id="svelte">%sveltekit.body%</div>
 
     <!-- sveltekit creates a <script> tag containing `src/client.js`
 	     and anything else it needs to hydrate the app and

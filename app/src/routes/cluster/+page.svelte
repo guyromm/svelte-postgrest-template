@@ -1,6 +1,6 @@
 <script>
   import { loremIpsum } from 'lorem-ipsum';
-  import { Cluster } from '../components/layout';
+  import { Cluster } from '../../components/layout';
 </script>
 
 <a href="https://every-layout.dev/layouts/cluster/" target="_blank"><h5>Cluster</h5></a>

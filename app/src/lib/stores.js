@@ -1,5 +1,5 @@
 import { writable } from 'svelte/store';
-import { browser } from '$app/env';
+import { browser } from '$app/environment';
 import { getCookie, getAuthData } from '../../../common/postgrest';
 export const authDataStore = writable(0);
 const l = console.log;
