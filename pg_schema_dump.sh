@@ -28,5 +28,8 @@ echo '* reconstructing'
 cd sql/schema && (echo 00 ; cat order.txt) | xargs cat  > $RSCHEMAFN ; 
 diff -Nuar $SCHEMAFN $RSCHEMAFN || (echo "DUMPS $SCHEMAFN && $RSCHEMAFN NOT EQUAL!" ; exit 2) &&
    echo '* erasing monodumps' && \
-	rm $SCHEMAFN $RSCHEMAFN
+       rm $SCHEMAFN $RSCHEMAFN && \
+       echo '* rewriting view creation' && \
+       sed -E -i 's/^CREATE VIEW/CREATE OR REPLACE VIEW/g' *sql && \
+       echo '* all done!'
 cd - 

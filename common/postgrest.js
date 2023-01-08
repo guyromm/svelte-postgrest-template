@@ -306,7 +306,7 @@ export async function update(path, doc, errok, key = ['id']) {
 }
 export async function upsert(path, obj, key = ['id']) {
   if (typeof key !== 'object') throw 'wrong key type in upsert'
-  let res = await insert(path, obj, true)
+    let res = await insert(path, obj, true,{'Prefer':'resolution=merge-duplicates'})
   if (res.status === 409) {
     let res2 = await update(path, obj, false, key)
     //l('upsert pt2',res2);

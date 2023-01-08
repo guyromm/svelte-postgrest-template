@@ -1,7 +1,7 @@
 -- Name: users; Type: VIEW; Schema: public; Owner: -
 --
 
-CREATE VIEW public.users AS
+CREATE OR REPLACE VIEW public.users AS
  SELECT u.ts,
     u.email,
     u.role,
