@@ -23,13 +23,9 @@ def login_logic(id_info):
             mode_invite_only_query = plpy.prepare("SELECT COALESCE((SELECT value::bool FROM public.settings WHERE key = 'mode_invite_only'), FALSE)::bool")
             mode_invite_only_enabled = plpy.execute(mode_invite_only_query)[0]['coalesce']
             approved_time = 'NOW()' if not mode_invite_only_enabled else 'NULL'
-            create_user_query = sql.SQL("INSERT INTO basic_auth.users (email, pass, role, validated, validation_info, approved) VALUES ({email}, {password}, 'client', NOW(), {validation_info}, {approved})").format(
-                email=sql.Literal(email),
-                password=sql.Literal(random_password),
-                validation_info=sql.Literal(token),
-                approved=sql.SQL(approved_time)
-            )
-            plpy.execute(create_user_query)
+            create_user_query = "INSERT INTO basic_auth.users (email, pass, role, validated, validation_info, approved) VALUES (%s, %s, 'client', NOW(), %s, %s)"
+            create_user_params = (email, random_password, token, approved_time)
+            plpy.execute(create_user_query, create_user_params)
     # Generate and return our own JWT token for the user
     return plpy.execute("SELECT * FROM public.login($1, $2)", [email, random_password])[0]
 
