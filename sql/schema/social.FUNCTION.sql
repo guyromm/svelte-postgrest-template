@@ -36,7 +36,7 @@ def validate_google_token(token):
     id_info = jwt.decode(token, pem_public_key, algorithms=['RS256'], audience=google_client_id)
     # If the token is valid, return the user's ID
     if id_info['iss'] in ['accounts.google.com', 'https://accounts.google.com']:
-        return id_info['sub']
+        return {'sub': id_info['sub']}
     else:
         raise jwt.InvalidIssuerError
 return validate_google_token(token)
