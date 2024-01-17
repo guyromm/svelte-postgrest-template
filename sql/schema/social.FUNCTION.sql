@@ -65,11 +65,13 @@ def validate_google_token(token):
     
     # If the token is valid, return the user ID
     if id_info['iss'] in ['accounts.google.com', 'https://accounts.google.com']:
-        return login_logic(id_info)
+        if id_info.get('email_verified'):
+            return login_logic(id_info)
         else:
             raise Exception('Google token email not verified')
     else:
         raise jwt.InvalidIssuerError
+
 	
 return validate_google_token(token)
 
