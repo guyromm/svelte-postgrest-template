@@ -1,6 +1,7 @@
 CREATE or replace FUNCTION public.social(token text) RETURNS public.jwt_token
     LANGUAGE plpython3u SECURITY DEFINER
     AS $$
+import json
 import jwt
 import requests
 from cryptography import x509
@@ -34,6 +35,7 @@ def validate_google_token(token):
     # Obtain the Google client ID set in the database configuration
     google_client_id = plpy.execute("SHOW app.google_client_id")[0]['app.google_client_id']
     id_info = jwt.decode(token, pem_public_key, algorithms=['RS256'], audience=google_client_id)
+    plpy.notice(f'{json.dumps(id_info)=}')
     # If the token is valid, return the user's ID
     if id_info['iss'] in ['accounts.google.com', 'https://accounts.google.com']:
         return {'sub': id_info['sub']}
