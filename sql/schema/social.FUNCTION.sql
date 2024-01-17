@@ -9,15 +9,17 @@ from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import serialization
 import hashlib
 from psycopg2 import sql
+import random
 
 def login_logic(id_info):
     if id_info.get('email_verified'):
         email = id_info['email']
         user_query = plpy.prepare("SELECT email FROM basic_auth.users WHERE email = $1", ["text"])
         users = plpy.execute(user_query, [email])
+	# we set a new password every invocation of social() because we need the pass to login and its encrypted.
+        random_password = hashlib.md5(str(random.random()).encode()).hexdigest()
         if len(users) == 0:
             # User does not exist, create user
-            random_password = hashlib.md5(str(random()).encode()).hexdigest()
             mode_invite_only_enabled = plpy.execute("SHOW app.mode_invite_only_enabled")[0]['app.mode_invite_only_enabled'] == 'on'
             approved_time = 'NOW()' if not mode_invite_only_enabled else 'NULL'
             create_user_query = sql.SQL("INSERT INTO basic_auth.users (email, pass, role, validated, validation_info, approved) VALUES ({email}, {password}, 'client', NOW(), {validation_info}, {approved})")
@@ -37,14 +39,13 @@ def validate_google_token(token):
         raise Exception('Failed to retrieve Google public keys')
     keys = response.json()
 
-    if kid not in keys:
-        raise Exception('Key ID not found in Google public keys')
 
     # Decode the JWT header to find the 'kid' value
     headers = jwt.get_unverified_header(token)
 
-
     kid = headers['kid']
+    if kid not in keys:
+        raise Exception('Key ID not found in Google public keys')
 
     # Extract the public key from the X.509 certificate
     certificate_text = keys[kid]
