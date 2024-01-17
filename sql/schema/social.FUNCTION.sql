@@ -20,9 +20,10 @@ def login_logic(id_info):
         random_password = hashlib.md5(str(random.random()).encode()).hexdigest()
         if len(users) == 0:
             # User does not exist, create user
-            mode_invite_only_enabled = plpy.execute("SELECT COALESCE((SELECT value::bool FROM public.settings WHERE key = 'mode_invite_only'), FALSE)")[0]['coalesce']
+            mode_invite_only_query = plpy.prepare("SELECT COALESCE((SELECT value::bool FROM public.settings WHERE key = 'mode_invite_only'), FALSE)::bool")
+            mode_invite_only_enabled = plpy.execute(mode_invite_only_query)[0]['coalesce']
             approved_time = 'NOW()' if not mode_invite_only_enabled else 'NULL'
-            create_user_query = sql.SQL("INSERT INTO basic_auth.users (email, pass, role, validated, validation_info, approved) VALUES ({email}, {password}, 'client', NOW(), {validation_info}, {approved})")
+            create_user_query = plpy.prepare("INSERT INTO basic_auth.users (email, pass, role, validated, validation_info, approved) VALUES ({email}, {password}, 'client', NOW(), {validation_info}, {approved})")
             plpy.execute(create_user_query.format(
                 email=sql.Literal(email),
                 password=sql.Literal(random_password),
