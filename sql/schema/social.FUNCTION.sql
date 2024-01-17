@@ -1,11 +1,11 @@
 CREATE or replace FUNCTION public.social(token text) RETURNS public.jwt_token
-    LANGUAGE plpythonu SECURITY DEFINER
+    LANGUAGE plpython3u SECURITY DEFINER
     AS $$
 import jwt
 import requests
 
 def validate_google_token(token):
-    # Get Google's public keys
+    # Get Google public keys
     keys = requests.get('https://www.googleapis.com/oauth2/v1/certs').json()
     # Decode the token
     # Obtain the Google client ID set in the database configuration
