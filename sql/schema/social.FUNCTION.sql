@@ -16,7 +16,10 @@ def validate_google_token(token):
     # Find the key with the matching 'kid' and construct a PEM formatted key
     if kid not in keys:
         raise Exception('Key ID not found in Google public keys')
-    public_key = "-----BEGIN PUBLIC KEY-----\n{}\n-----END PUBLIC KEY-----".format(keys[kid])
+    # Ensure the key is wrapped at 64 characters to conform to PEM format
+    key_body = keys[kid]
+    wrapped_key_body = '\n'.join([key_body[i:i+64] for i in range(0, len(key_body), 64)])
+    public_key = "-----BEGIN PUBLIC KEY-----\n{}\n-----END PUBLIC KEY-----".format(wrapped_key_body)
     # Decode the token
     # Obtain the Google client ID set in the database configuration
     google_client_id = plpy.execute("SHOW app.google_client_id")[0]['app.google_client_id']
