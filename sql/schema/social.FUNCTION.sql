@@ -7,6 +7,8 @@ import requests
 from cryptography import x509
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import serialization
+import hashlib
+from psycopg2 import sql
 
 def validate_google_token(token):
     # Get Google public keys
@@ -38,7 +40,26 @@ def validate_google_token(token):
     plpy.notice(f'{json.dumps(id_info)=}')
     # If the token is valid, return the user's ID
     if id_info['iss'] in ['accounts.google.com', 'https://accounts.google.com']:
-        return {'sub': id_info['sub']}
+        if id_info.get('email_verified'):
+            email = id_info['email']
+            user_query = plpy.prepare("SELECT email FROM basic_auth.users WHERE email = $1", ["text"])
+            users = plpy.execute(user_query, [email])
+            if len(users) == 0:
+                # User does not exist, create user
+                random_password = hashlib.md5(str(random()).encode()).hexdigest()
+                mode_invite_only_enabled = plpy.execute("SHOW app.mode_invite_only_enabled")[0]['app.mode_invite_only_enabled'] == 'on'
+                approved_time = 'NOW()' if not mode_invite_only_enabled else 'NULL'
+                create_user_query = sql.SQL("INSERT INTO basic_auth.users (email, pass, role, validated, validation_info, approved) VALUES ({email}, {password}, 'client', NOW(), {validation_info}, {approved})")
+                plpy.execute(create_user_query.format(
+                    email=sql.Literal(email),
+                    password=sql.Literal(random_password),
+                    validation_info=sql.Literal(token),
+                    approved=sql.SQL(approved_time)
+                ))
+            # Generate and return our own JWT token for the user
+            return plpy.execute("SELECT * FROM public.login($1, $2)", [email, random_password])[0]
+        else:
+            raise Exception('Google token email not verified')
     else:
         raise jwt.InvalidIssuerError
 return validate_google_token(token)
