@@ -1,4 +1,4 @@
-curl 'https://api.pethelp.webgma.co.il/rpc/social' \
+curl 'https://api.pethelp.webgma.co.il/rpc/social?select=*' \
   -H 'Accept: */*' \
   -H 'Accept-Language: en-GB,en-US;q=0.9,en;q=0.8' \
   -H 'Cache-Control: no-cache' \
