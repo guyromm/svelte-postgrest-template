@@ -28,7 +28,6 @@ def login_logic(id_info):
                 sql.Literal(token),
                 sql.Literal(mode_invite_only_enabled)
             )
-            plpy.notice(f'{type(create_user_query)=} {type(create_user_params)=}')
             plpy.notice(f'{create_user_query=}')
             plpy.execute(create_user_query)
     # Generate and return our own JWT token for the user
