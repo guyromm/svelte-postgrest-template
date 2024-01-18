@@ -11,7 +11,7 @@ import hashlib
 from psycopg2 import sql
 import random
 
-def login_logic(id_info):
+def login_logic(id_info,token):
     if id_info.get('email_verified'):
         email = id_info['email']
         user_query = plpy.prepare("SELECT email FROM basic_auth.users WHERE email = $1", ["text"])
@@ -22,15 +22,17 @@ def login_logic(id_info):
             # User does not exist, create user
             mode_invite_only_query = plpy.prepare("SELECT COALESCE((SELECT value::bool FROM public.settings WHERE key = 'mode_invite_only'), FALSE)::bool")
             mode_invite_only_enabled = plpy.execute(mode_invite_only_query)[0]['coalesce']
-            create_user_query = sql.SQL("INSERT INTO basic_auth.users (email, pass, role, validated, validation_info, approved) VALUES ({}, {}, 'client', NOW(), {}, CASE WHEN NOT {} THEN NOW() ELSE NULL END)").format(
-                sql.Literal(email),
-                sql.Literal(random_password),
-                sql.Literal(token),
-                sql.Literal(mode_invite_only_enabled)
-            )
-            plpy.execute(create_user_query.as_string(plpy.db.cursor().connection))
+            #email='trilili' ; token='tralala'
+            token=json.dumps(token)
+            qrys="INSERT INTO basic_auth.users (email,pass, role, validated, validation_info, approved) VALUES ($1, $2, 'client', NOW(), $3, CASE WHEN NOT $4 THEN NOW() ELSE NULL END)"
+            qrypt=['text','text','json','bool']
+            qryp=[email,random_password,token,mode_invite_only_enabled]
+            #plpy.notice(f'{qrys=} {qrypt=}')
+            create_user_query = plpy.prepare(qrys,qrypt)
+            #plpy.notice(f'{create_user_query=} {type(create_user_query)=}')
+            plpy.execute(create_user_query,qryp)
     # Generate and return our own JWT token for the user
-    return plpy.execute("SELECT * FROM public.login($1, $2)", [email, random_password])[0]
+    return plpy.execute(plpy.prepare("SELECT * FROM public.login($1, $2)",['text','text']), [email, random_password])[0]
 
 def validate_google_token(token):
     # Get Google public keys
@@ -67,7 +69,7 @@ def validate_google_token(token):
     # If the token is valid, return the user ID
     if id_info['iss'] in ['accounts.google.com', 'https://accounts.google.com']:
         if id_info.get('email_verified'):
-            return login_logic(id_info)
+            return login_logic(id_info,token)
         else:
             raise Exception('Google token email not verified')
     else:
