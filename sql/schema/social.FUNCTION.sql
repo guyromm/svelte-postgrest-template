@@ -28,9 +28,7 @@ def login_logic(id_info):
                 sql.Literal(token),
                 sql.Literal(mode_invite_only_enabled)
             )
-            qrystr = create_user_query.as_string(plpy.connection)
-            plpy.notice(f'{qrystr=}')
-            plpy.execute(qrystr)
+            plpy.execute(create_user_query)
     # Generate and return our own JWT token for the user
     return plpy.execute("SELECT * FROM public.login($1, $2)", [email, random_password])[0]
 
