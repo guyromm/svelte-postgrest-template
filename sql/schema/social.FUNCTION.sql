@@ -28,8 +28,9 @@ def login_logic(id_info):
                 sql.Literal(token),
                 sql.Literal(mode_invite_only_enabled)
             )
-            plpy.notice(f'{create_user_query=}')
-            plpy.execute(create_user_query.as_string(plpy._curs.connection))
+            qrystr = create_user_query.as_string(plpy._curs.connection)
+            plpy.notice(f'{qrystr=}')
+            plpy.execute(qrystr)
     # Generate and return our own JWT token for the user
     return plpy.execute("SELECT * FROM public.login($1, $2)", [email, random_password])[0]
 
@@ -57,7 +58,7 @@ def validate_google_token(token):
         format=serialization.PublicFormat.SubjectPublicKeyInfo
     )
     # Debug: Output the PEM public key to verify its format
-    plpy.notice("PEM public key:\n{}".format(pem_public_key.decode()))
+    #plpy.notice("PEM public key:\n{}".format(pem_public_key.decode()))
 
     # Obtain the Google client ID set in the database configuration
     google_client_id = plpy.execute("SHOW app.google_client_id")[0]['app.google_client_id']
