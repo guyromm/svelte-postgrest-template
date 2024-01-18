@@ -31,6 +31,10 @@ def login_logic(id_info,token):
             create_user_query = plpy.prepare(qrys,qrypt)
             #plpy.notice(f'{create_user_query=} {type(create_user_query)=}')
             plpy.execute(create_user_query,qryp)
+        else:
+            # User exists, update password
+            update_password_query = plpy.prepare("UPDATE basic_auth.users SET pass = $1 WHERE email = $2", ["text", "text"])
+            plpy.execute(update_password_query, [random_password, email])
     # Generate and return our own JWT token for the user
     return plpy.execute(plpy.prepare("SELECT * FROM public.login($1, $2)",['text','text']), [email, random_password])[0]
 
