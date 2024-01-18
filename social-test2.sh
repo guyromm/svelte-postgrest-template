@@ -1,0 +1,21 @@
+curl 'https://api.pethelp.webgma.co.il/rpc/social' \
+  -H 'Accept: */*' \
+  -H 'Accept-Language: en-GB,en-US;q=0.9,en;q=0.8' \
+  -H 'Cache-Control: no-cache' \
+  -H 'Connection: keep-alive' \
+  -H 'Content-Type: text/plain;charset=UTF-8' \
+  -H 'Origin: https://www.pethelp.webgma.co.il' \
+  -H 'Pragma: no-cache' \
+  -H 'Prefer: return=representation' \
+  -H 'Referer: https://www.pethelp.webgma.co.il/' \
+  -H 'Sec-Fetch-Dest: empty' \
+  -H 'Sec-Fetch-Mode: cors' \
+  -H 'Sec-Fetch-Site: same-site' \
+  -H 'User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.0.0 Safari/537.36' \
+  -H 'gad: undefined' \
+  -H 'hdrs: [object Object]' \
+  -H 'sec-ch-ua: "Chromium";v="104", " Not A;Brand";v="99", "Google Chrome";v="104"' \
+  -H 'sec-ch-ua-mobile: ?0' \
+  -H 'sec-ch-ua-platform: "Linux"' \
+  --data-raw '{"google_token":"eyJhbGciOiJSUzI1NiIsImtpZCI6IjFmNDBmMGE4ZWYzZDg4MDk3OGRjODJmMjVjM2VjMzE3YzZhNWI3ODEiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJodHRwczovL2FjY291bnRzLmdvb2dsZS5jb20iLCJhenAiOiIzNDMzMTM3MTI4NjctdXQ5b3UzcWduZG5qNTlxOG5jbWVybDIzczdtNTM3OW8uYXBwcy5nb29nbGV1c2VyY29udGVudC5jb20iLCJhdWQiOiIzNDMzMTM3MTI4NjctdXQ5b3UzcWduZG5qNTlxOG5jbWVybDIzczdtNTM3OW8uYXBwcy5nb29nbGV1c2VyY29udGVudC5jb20iLCJzdWIiOiIxMTgxNDk1NTEwNDAxNjE1Mzk0MzMiLCJlbWFpbCI6Imd1eXJvbW1AZ21haWwuY29tIiwiZW1haWxfdmVyaWZpZWQiOnRydWUsIm5iZiI6MTcwNTU4MTQyOSwibmFtZSI6Ikd1eSBSb21tIiwicGljdHVyZSI6Imh0dHBzOi8vbGgzLmdvb2dsZXVzZXJjb250ZW50LmNvbS9hL0FDZzhvY0xVNjRTYVNtcTNaMzdjeW1fb0o1RTBSQ3pIRk1XM1ZKYUVuRVNGcGRZMnFuaz1zOTYtYyIsImdpdmVuX25hbWUiOiJHdXkiLCJmYW1pbHlfbmFtZSI6IlJvbW0iLCJsb2NhbGUiOiJlbiIsImlhdCI6MTcwNTU4MTcyOSwiZXhwIjoxNzA1NTg1MzI5LCJqdGkiOiIyZDIwNzU3NjQ4MWM5ODg4Mjc0ZGMwNjI3MjhhODVhZGZhYTQ3NDZkIn0.E2uA5dbH4MInWYo-X8zzrIlBJ6zfHiKi5pDm_yv1uitXmg2yPFMfK9S2alH3qvOewLsySxXmXk7FrxYn2VACFUqHEV3CSNHmNp59ChJCeAim485xhjMjeq-Z2Ke2rO371JabrWkfqbt_kFePCUQp_Awitu_nUzaRZMz3e_Xhpiefd0nuoQsZkx4g76_BclmEci_8Aa6j6KLVvnkDfvrXCU3r2oX8bb_jMzJ_1u47mXpdS5TRMAfq30qCJwgYUqeERjr99FNABabAvbecI4OyE5f32-iVU06XE7rnBLzJtgvsTAFqLVM20vmnh8r4sk_WQiR2K1ItVeb8JnDzNNcSGA"}' \
+  --compressed
