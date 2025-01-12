@@ -1,5 +1,7 @@
 
 basic_auth.SCHEMA.sql
+plpython3u.EXTENSION.sql
+EXTENSION.plpython3u.COMMENT.sql
 pgcrypto.EXTENSION.sql
 EXTENSION.pgcrypto.COMMENT.sql
 pgjwt.EXTENSION.sql
@@ -21,6 +23,7 @@ role.cv.cv.FUNCTION.sql
 users.TABLE.sql
 users.VIEW.sql
 set_user_role.text,.text.FUNCTION.sql
+social.text.FUNCTION.sql
 unvalidate.cv.FUNCTION.sql
 user_approved.text,.boolean.FUNCTION.sql
 user_delete.cv.FUNCTION.sql
